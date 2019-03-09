@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# temp or work files
+*.aiff
+*.pptx
+*.mp3
+
 # C extensions
 *.so
 
