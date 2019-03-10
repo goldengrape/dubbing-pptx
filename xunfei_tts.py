@@ -114,7 +114,7 @@ def construct_urlencode_utf8(t):
 
 # 短句tts
 
-# In[7]:
+# In[11]:
 
 
 def short_tts(TEXT, xf_tts):
@@ -127,7 +127,7 @@ def short_tts(TEXT, xf_tts):
     response = urllib.request.urlopen(req)
     response_head = response.headers['Content-Type']
     if(response_head == "text/plain"):
-        raise UserWarning(response.read().decode('utf8'))
+        raise UserWarning("讯飞WebAPI错误: ", response.read().decode('utf8')["desc"])
 #     return response.read()
     return response
 
@@ -170,7 +170,7 @@ def xf_save_tts(xf_tts, TEXT, filename):
         os.remove(temp_filename)
 
 
-# In[9]:
+# In[12]:
 
 
 if __name__=="__main__":

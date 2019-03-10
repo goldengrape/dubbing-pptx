@@ -11931,17 +11931,6 @@ div#notebook {
     <span class="n">width</span> <span class="o">=</span> <span class="n">height</span> <span class="o">=</span> <span class="n">Inches</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 
     <span class="n">shapes</span> <span class="o">=</span> <span class="n">slide</span><span class="o">.</span><span class="n">shapes</span>
-    
-<span class="c1">#     # 等待文件可读取后再继续</span>
-<span class="c1">#     t_start=time.time()</span>
-<span class="c1">#     while(not(os.access(voice_filename, os.W_OK))):</span>
-<span class="c1">#         print(&quot;waiting for file&quot;)</span>
-<span class="c1">#         if time.time()-t_start&gt;=10: break</span>
-<span class="c1">#     time.sleep(15)</span>
-<span class="c1">#   出现的问题是长句切分以后第一段可以被写入到ppt中, 并在ppt中播放, </span>
-<span class="c1">#   但如果追踪文件的话, 音频文件是完整可听到的. </span>
-<span class="c1">#   但是音频文件的时间显示是异常的, 当使用音频播放器时, 只有第一段的时间长度显示出来, 当播放到还剩0秒时, 可以继续播放</span>
-    
     <span class="n">movie</span> <span class="o">=</span> <span class="n">shapes</span><span class="o">.</span><span class="n">add_movie</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">,</span> 
                                  <span class="n">left</span> <span class="p">,</span> <span class="n">top</span> <span class="p">,</span> <span class="n">width</span> <span class="p">,</span> <span class="n">height</span><span class="p">,</span> 
                                  <span class="n">poster_frame_image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -12034,7 +12023,7 @@ div#notebook {
         <span class="n">output_filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ppt_path</span><span class="p">,</span> <span class="s2">&quot;output.pptx&quot;</span><span class="p">)</span>
         
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error, I need input a filename&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="s2">&quot;参数输入错误&quot;</span><span class="p">)</span>
     
     <span class="c1"># local test</span>
     <span class="n">ppt_filename</span><span class="o">=</span><span class="s2">&quot;sample/test.pptx&quot;</span>

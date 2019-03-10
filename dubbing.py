@@ -95,17 +95,6 @@ def insert_voice(voice_filename, slide):
     width = height = Inches(1.0)
 
     shapes = slide.shapes
-    
-#     # 等待文件可读取后再继续
-#     t_start=time.time()
-#     while(not(os.access(voice_filename, os.W_OK))):
-#         print("waiting for file")
-#         if time.time()-t_start>=10: break
-#     time.sleep(15)
-#   出现的问题是长句切分以后第一段可以被写入到ppt中, 并在ppt中播放, 
-#   但如果追踪文件的话, 音频文件是完整可听到的. 
-#   但是音频文件的时间显示是异常的, 当使用音频播放器时, 只有第一段的时间长度显示出来, 当播放到还剩0秒时, 可以继续播放
-    
     movie = shapes.add_movie(voice_filename, 
                                  left , top , width , height, 
                                  poster_frame_image=None, 
@@ -165,7 +154,7 @@ if __name__=="__main__":
         output_filename=os.path.join(ppt_path, "output.pptx")
         
     else:
-        print("Error, I need input a filename")
+        raise UserWarning("参数输入错误")
     
     # local test
     ppt_filename="sample/test.pptx"
