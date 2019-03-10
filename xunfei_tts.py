@@ -12,6 +12,8 @@ import hashlib
 import urllib.request
 import urllib.parse
 import json
+import subprocess
+import os
 
 
 # ## 分割长字符串
@@ -123,9 +125,8 @@ def short_tts(TEXT, xf_tts):
         data=construct_urlencode_utf8(TEXT), 
         headers=construct_header(api, construct_base64_str(Param)))
     response = urllib.request.urlopen(req)
-    print(TEXT)
-    print("_____")
-    return response.read()
+#     return response.read()
+    return response
 
 
 # 长句tts
@@ -135,16 +136,35 @@ def short_tts(TEXT, xf_tts):
 
 def long_tts(TEXT, xf_tts):
     Param, api, Lmax=xf_tts
-    data=b''
+    data=[]
     for sub_text in cut_string(TEXT, Lmax):
-        data+=short_tts(sub_text, xf_tts)
+        response = short_tts(sub_text, xf_tts)
+        data.append(response.read())
+#         data+=short_tts(sub_text, xf_tts)
     return data
 
 def xf_save_tts(xf_tts, TEXT, filename):
     data=long_tts(TEXT, xf_tts)
-    with open(filename, 'wb') as f:
-        f.write(data)
+    temp_filename_list=["tts_tmp_{}.mp3".format(index) for index in range(len(data))]
     
+    for index, voice_piece in enumerate(data):
+        temp_filename=temp_filename_list[index]
+        with open(temp_filename, 'wb') as f:
+            f.write(voice_piece)
+    with open("temp_file_list.txt", "w") as f_temp:
+        for temp_filename in temp_filename_list:
+            f_temp.write("file '{}'\n".format(temp_filename))
+    # concat with ffmpeg
+#     ffmpeg -f concat -i mylist.txt -c copy output
+    subprocess.run([
+        "ffmpeg","-f","concat",
+        "-i", "temp_file_list.txt",
+        "-c", "copy",
+        filename
+    ])
+    os.remove("temp_file_list.txt")
+    for temp_filename in temp_filename_list:
+        os.remove(temp_filename)
 
 
 # In[9]:
