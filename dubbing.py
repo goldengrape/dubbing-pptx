@@ -9,11 +9,10 @@
 # In[1]:
 
 
-import sys, os , subprocess, time
-from  AppKit import NSSpeechSynthesizer
-import Foundation
-import platform
-
+import sys, os , subprocess, time, platform
+if platform.system()=="Darwin":
+    from  AppKit import NSSpeechSynthesizer
+    import Foundation
 from pptx import Presentation
 from pptx.util import Inches
 
@@ -26,9 +25,12 @@ def read_pptx(ppt_filename):
     return prs
 
 def init_tts(rate=200):
-    nssp = NSSpeechSynthesizer
-    ve = nssp.alloc().init()
-#     ve.setRate_(rate) # 不在程序内设置, 而是在系统中设置速度或者其他语音参数似乎更好
+    if platform.system()=="Darwin":
+        nssp = NSSpeechSynthesizer
+        ve = nssp.alloc().init()
+    #     ve.setRate_(rate) # 不在程序内设置, 而是在系统中设置速度或者其他语音参数似乎更好
+    else:
+        return 0
     return ve
 
 
@@ -58,7 +60,7 @@ def save_tts(ve, TEXT, filename):
     if platform.system()=="Linux":
         # 尚未测试
         filename=filename+".wav"
-        subprocess.call(["espeak",TEXT,"-w", file_name])
+        subprocess.call(["espeak",TEXT,"-w", filename])
     if platform.system()=="Windows":
         # 看起来很复杂的样子, 参考: https://github.com/nateshmbhat/pyttsx3/issues/7
         pass
