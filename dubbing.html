@@ -11931,6 +11931,17 @@ div#notebook {
     <span class="n">width</span> <span class="o">=</span> <span class="n">height</span> <span class="o">=</span> <span class="n">Inches</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 
     <span class="n">shapes</span> <span class="o">=</span> <span class="n">slide</span><span class="o">.</span><span class="n">shapes</span>
+    
+<span class="c1">#     # 等待文件可读取后再继续</span>
+<span class="c1">#     t_start=time.time()</span>
+<span class="c1">#     while(not(os.access(voice_filename, os.W_OK))):</span>
+<span class="c1">#         print(&quot;waiting for file&quot;)</span>
+<span class="c1">#         if time.time()-t_start&gt;=10: break</span>
+<span class="c1">#     time.sleep(15)</span>
+<span class="c1">#   出现的问题是长句切分以后第一段可以被写入到ppt中, 并在ppt中播放, </span>
+<span class="c1">#   但如果追踪文件的话, 音频文件是完整可听到的. </span>
+<span class="c1">#   但是音频文件的时间显示是异常的, 当使用音频播放器时, 只有第一段的时间长度显示出来, 当播放到还剩0秒时, 可以继续播放</span>
+    
     <span class="n">movie</span> <span class="o">=</span> <span class="n">shapes</span><span class="o">.</span><span class="n">add_movie</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">,</span> 
                                  <span class="n">left</span> <span class="p">,</span> <span class="n">top</span> <span class="p">,</span> <span class="n">width</span> <span class="p">,</span> <span class="n">height</span><span class="p">,</span> 
                                  <span class="n">poster_frame_image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -11986,8 +11997,6 @@ div#notebook {
     <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">slide</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">prs</span><span class="o">.</span><span class="n">slides</span><span class="p">):</span> 
         <span class="n">note</span><span class="o">=</span><span class="n">get_notes_text</span><span class="p">(</span><span class="n">slide</span><span class="p">)</span>
         <span class="n">voice_filename</span><span class="o">=</span><span class="n">save_notes_voice</span><span class="p">(</span><span class="n">ve</span><span class="p">,</span> <span class="n">note</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">tts_engine</span><span class="p">)</span>
-
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># 需要等待使音频处理完成, 如果时间过短, 可能在后面几张幻灯中音频无法播放, 不知为何.</span>
         <span class="n">insert_voice</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">,</span> <span class="n">slide</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slide No. </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">N_slides</span><span class="p">))</span>
         <span class="n">clean_temp</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">)</span>
@@ -12045,16 +12054,26 @@ div#notebook {
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Slide No. 1 / 10
-Slide No. 2 / 10
-Slide No. 3 / 10
-Slide No. 4 / 10
-Slide No. 5 / 10
-Slide No. 6 / 10
-Slide No. 7 / 10
-Slide No. 8 / 10
-Slide No. 9 / 10
-Slide No. 10 / 10
+<pre>只要晶状体出现浑浊，就叫白内障。
+所以白内障实际上是一个很宽泛的概念。
+我们知道人眼有2个透镜，1个是角膜，1个是晶状体, 相当于照相机上的镜头组，如果镜头之中有任何1个是混浊的，那么都会影响成像的质量。白内障可以是一部分的混浊，也可以是完全的混浊，
+白内障患者的视觉有可能是部分影响，觉得看东西模糊, 也可能是完全就看不见了。如果双眼晶状体都完全浑浊不透光, 那么患者就是盲人了. 
+
+白内障是全球第一位的致盲性眼病，但白内障导致的眼盲是可逆的，我们后面讲只要做白内障手术，就可以使白内障患者重见光明。
+
+一个人, 如果眼睛看不到了，不但他自己失去工作和独立生活的能力，还需要有一个人来照顾她。
+这样就导致另一个人也无法继续工作. 
+所以, 一个家庭可能会因为白内障致盲而从正常走向贫困。
+
+但幸好白内障是可逆性的致盲性眼病，所以反过来说, 如果将白内障治好了, 那么她的家庭很可能因此而脱贫。
+
+这就是为什么我们经常会听到有白内障扶贫手术这样的慈善活动. 
+
+顺便说, 你是否知道全球不可逆的致盲性眼病，首要的原因是什么? 答案是青光眼。
+
+
+
+Slide No. 1 / 1
 save to  sample/output.pptx
 </pre>
 </div>
