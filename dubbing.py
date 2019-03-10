@@ -15,6 +15,7 @@ if platform.system()=="Darwin":
     import Foundation
 from pptx import Presentation
 from pptx.util import Inches
+from xunfei_tts import init_xf_tts, xf_save_tts
 
 
 # In[2]:
@@ -24,13 +25,18 @@ def read_pptx(ppt_filename):
     prs = Presentation(ppt_filename)
     return prs
 
-def init_tts(rate=200):
-    if platform.system()=="Darwin":
+def init_tts(tts_engine):
+    if tts_engine=="nsss":
         nssp = NSSpeechSynthesizer
         ve = nssp.alloc().init()
-    #     ve.setRate_(rate) # 不在程序内设置, 而是在系统中设置速度或者其他语音参数似乎更好
+    elif tts_engine=="espeak":
+        ve = 0
+    elif tts_engine=="sapi5":
+        ve = 0
+    elif tts_engine=="xunfei":
+        ve = init_xf_tts()
     else:
-        return 0
+        ve = 0
     return ve
 
 
@@ -50,30 +56,32 @@ def get_notes_text(slide):
 # In[4]:
 
 
-def save_tts(ve, TEXT, filename):
-    if platform.system()=="Darwin":
+def save_tts(ve, TEXT, filename, tts_engine):
+    if tts_engine=="nsss":
         filename=filename+".aiff"
         url = Foundation.NSURL.fileURLWithPath_(filename)
         s=ve.startSpeakingString_toURL_(TEXT,url)    
         if not(s):
             print("TTS failed") 
-    if platform.system()=="Linux":
+    elif tts_engine=="espeak":
         # 尚未测试
         filename=filename+".wav"
         subprocess.call(["espeak",TEXT,"-w", filename])
-    if platform.system()=="Windows":
+    elif tts_engine=="sapi5":
         # 看起来很复杂的样子, 参考: https://github.com/nateshmbhat/pyttsx3/issues/7
         pass
-    
+    elif tts_engine=="xunfei":
+        filename=filename+".mp3"
+        xf_save_tts(ve, TEXT, filename)
     return filename
 
 
 # In[5]:
 
 
-def save_notes_voice(ve, text, page_number):
+def save_notes_voice(ve, text, page_number, tts_engine):
     voice_filename= "temp_tts_{:3d}".format(page_number)
-    voice_filename= save_tts(ve, text,voice_filename )
+    voice_filename= save_tts(ve, text,voice_filename, tts_engine )
     return voice_filename
 
 
@@ -108,14 +116,14 @@ def clean_temp(voice_filename):
 # In[8]:
 
 
-def main(ppt_filename, output_filename):
-    ve=init_tts(rate=200)
+def main(ppt_filename, output_filename, tts_engine):
+    ve=init_tts(tts_engine)
     prs=read_pptx(ppt_filename)
     N_slides=len(prs.slides)
     
     for index, slide in enumerate(prs.slides): 
         note=get_notes_text(slide)
-        voice_filename=save_notes_voice(ve, note, index)
+        voice_filename=save_notes_voice(ve, note, index, tts_engine)
 
         time.sleep(3)  # 需要等待使音频处理完成, 如果时间过短, 可能在后面几张幻灯中音频无法播放, 不知为何.
         insert_voice(voice_filename, slide)
@@ -140,11 +148,16 @@ if __name__=="__main__":
     else:
         print("Error, I need input a filename")
     
-#     assert (platform.system())=="Darwin"
+    # local test
+    ppt_filename="sample/test.pptx"
+    ppt_path=os.path.dirname(ppt_filename)
+    output_filename=os.path.join(ppt_path, "output.pptx")
     
-#     ppt_filename="sample/test.pptx"
-#     ppt_path=os.path.dirname(ppt_filename)
-#     output_filename=os.path.join(ppt_path, "output.pptx")
-    
-    main(ppt_filename, output_filename)
+    tts_engine_dict={"Darwin":"nsss",
+                     "Linux": "espeak",
+                     "Windows":"sapi5",
+                     "Online": "xunfei",}
+
+    tts_engine=tts_engine_dict["Online"]
+    main(ppt_filename, output_filename, tts_engine)
 
