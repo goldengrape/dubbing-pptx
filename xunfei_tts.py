@@ -125,6 +125,9 @@ def short_tts(TEXT, xf_tts):
         data=construct_urlencode_utf8(TEXT), 
         headers=construct_header(api, construct_base64_str(Param)))
     response = urllib.request.urlopen(req)
+    response_head = response.headers['Content-Type']
+    if(response_head == "text/plain"):
+        raise UserWarning(response.read().decode('utf8'))
 #     return response.read()
     return response
 

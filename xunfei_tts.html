@@ -11983,6 +11983,9 @@ div#notebook {
         <span class="n">data</span><span class="o">=</span><span class="n">construct_urlencode_utf8</span><span class="p">(</span><span class="n">TEXT</span><span class="p">),</span> 
         <span class="n">headers</span><span class="o">=</span><span class="n">construct_header</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">construct_base64_str</span><span class="p">(</span><span class="n">Param</span><span class="p">)))</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+    <span class="n">response_head</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">response_head</span> <span class="o">==</span> <span class="s2">&quot;text/plain&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
 <span class="c1">#     return response.read()</span>
     <span class="k">return</span> <span class="n">response</span>
 </pre></div>
@@ -12072,6 +12075,52 @@ div#notebook {
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">UserWarning</span>                               Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-9-607e4527a5f2&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">     18</span>     &#39;&#39;&#39;
+<span class="ansi-green-intense-fg ansi-bold">     19</span>     xf_tts<span class="ansi-blue-fg">=</span>init_xf_tts<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 20</span><span class="ansi-red-fg">     </span>xf_save_tts<span class="ansi-blue-fg">(</span>xf_tts<span class="ansi-blue-fg">,</span> text<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;tts_test.mp3&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-8-265a1ff4c71b&gt;</span> in <span class="ansi-cyan-fg">xf_save_tts</span><span class="ansi-blue-fg">(xf_tts, TEXT, filename)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> 
+<span class="ansi-green-intense-fg ansi-bold">     10</span> <span class="ansi-green-fg">def</span> xf_save_tts<span class="ansi-blue-fg">(</span>xf_tts<span class="ansi-blue-fg">,</span> TEXT<span class="ansi-blue-fg">,</span> filename<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">     </span>data<span class="ansi-blue-fg">=</span>long_tts<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">,</span> xf_tts<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>     temp_filename_list<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#34;tts_tmp_{}.mp3&#34;</span><span class="ansi-blue-fg">.</span>format<span class="ansi-blue-fg">(</span>index<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> index <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>len<span class="ansi-blue-fg">(</span>data<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span> 
+
+<span class="ansi-green-fg">&lt;ipython-input-8-265a1ff4c71b&gt;</span> in <span class="ansi-cyan-fg">long_tts</span><span class="ansi-blue-fg">(TEXT, xf_tts)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     data<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>     <span class="ansi-green-fg">for</span> sub_text <span class="ansi-green-fg">in</span> cut_string<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">,</span> Lmax<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg">         </span>response <span class="ansi-blue-fg">=</span> short_tts<span class="ansi-blue-fg">(</span>sub_text<span class="ansi-blue-fg">,</span> xf_tts<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>         data<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>response<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-red-fg">#         data+=short_tts(sub_text, xf_tts)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-7-1968534898c9&gt;</span> in <span class="ansi-cyan-fg">short_tts</span><span class="ansi-blue-fg">(TEXT, xf_tts)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span>     response_head <span class="ansi-blue-fg">=</span> response<span class="ansi-blue-fg">.</span>headers<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;Content-Type&#39;</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span><span class="ansi-blue-fg">(</span>response_head <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#34;text/plain&#34;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> UserWarning<span class="ansi-blue-fg">(</span>response<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>decode<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;utf8&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span> <span class="ansi-red-fg">#     return response.read()</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>     <span class="ansi-green-fg">return</span> response
+
+<span class="ansi-red-fg">UserWarning</span>: {&#34;code&#34;:&#34;10105&#34;,&#34;data&#34;:&#34;&#34;,&#34;desc&#34;:&#34;illegal access|no appid info&#34;,&#34;sid&#34;:&#34;hts005a7095@ch0f6c0fe09916477500&#34;}</pre>
+</div>
+</div>
+
 </div>
 </div>
 
