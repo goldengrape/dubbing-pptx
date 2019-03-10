@@ -12,6 +12,7 @@
 import sys, os , subprocess, time
 from  AppKit import NSSpeechSynthesizer
 import Foundation
+import platform
 
 from pptx import Presentation
 from pptx.util import Inches
@@ -27,7 +28,7 @@ def read_pptx(ppt_filename):
 def init_tts(rate=200):
     nssp = NSSpeechSynthesizer
     ve = nssp.alloc().init()
-    ve.setRate_(rate)
+#     ve.setRate_(rate) # 不在程序内设置, 而是在系统中设置速度或者其他语音参数似乎更好
     return ve
 
 
@@ -106,7 +107,7 @@ def main(ppt_filename, output_filename):
 
         time.sleep(3)  # 需要等待使音频处理完成, 如果时间过短, 可能在后面几张幻灯中音频无法播放, 不知为何.
         insert_voice(voice_filename, slide)
-        print("Slide No. {} / {}".format(index,N_slides))
+        print("Slide No. {} / {}".format(index+1,N_slides))
         clean_temp(voice_filename)
     prs.save(output_filename)
     print("save to ",output_filename)
@@ -116,6 +117,7 @@ def main(ppt_filename, output_filename):
 
 
 if __name__=="__main__":
+
     if len(sys.argv)==3 :
         ppt_filename=sys.argv[1]
         output_filename=sys.argv[2]
@@ -125,10 +127,12 @@ if __name__=="__main__":
         output_filename=os.path.join(ppt_path, "output.pptx")
     else:
         print("Error, I need input a filename")
-        
-#     ppt_filename="/test.pptx"
+    
+    assert (platform.system())=="Darwin"
+    
+#     ppt_filename="sample/test.pptx"
 #     ppt_path=os.path.dirname(ppt_filename)
-    output_filename=os.path.join(ppt_path, "output.pptx")
+#     output_filename=os.path.join(ppt_path, "output.pptx")
     
     main(ppt_filename, output_filename)
 

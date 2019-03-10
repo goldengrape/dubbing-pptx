@@ -11795,6 +11795,7 @@ div#notebook {
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span> <span class="o">,</span> <span class="nn">subprocess</span><span class="o">,</span> <span class="nn">time</span>
 <span class="kn">from</span>  <span class="nn">AppKit</span> <span class="k">import</span> <span class="n">NSSpeechSynthesizer</span>
 <span class="kn">import</span> <span class="nn">Foundation</span>
+<span class="kn">import</span> <span class="nn">platform</span>
 
 <span class="kn">from</span> <span class="nn">pptx</span> <span class="k">import</span> <span class="n">Presentation</span>
 <span class="kn">from</span> <span class="nn">pptx.util</span> <span class="k">import</span> <span class="n">Inches</span>
@@ -11817,7 +11818,7 @@ div#notebook {
 <span class="k">def</span> <span class="nf">init_tts</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
     <span class="n">nssp</span> <span class="o">=</span> <span class="n">NSSpeechSynthesizer</span>
     <span class="n">ve</span> <span class="o">=</span> <span class="n">nssp</span><span class="o">.</span><span class="n">alloc</span><span class="p">()</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
-    <span class="n">ve</span><span class="o">.</span><span class="n">setRate_</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+<span class="c1">#     ve.setRate_(rate) # 不在程序内设置, 而是在系统中设置速度或者其他语音参数似乎更好</span>
     <span class="k">return</span> <span class="n">ve</span>
 </pre></div>
 
@@ -11968,7 +11969,7 @@ div#notebook {
 
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># 需要等待使音频处理完成, 如果时间过短, 可能在后面几张幻灯中音频无法播放, 不知为何.</span>
         <span class="n">insert_voice</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">,</span> <span class="n">slide</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slide No. </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">N_slides</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slide No. </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">N_slides</span><span class="p">))</span>
         <span class="n">clean_temp</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">)</span>
     <span class="n">prs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_filename</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;save to &quot;</span><span class="p">,</span><span class="n">output_filename</span><span class="p">)</span>
@@ -11985,6 +11986,7 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">==</span><span class="mi">3</span> <span class="p">:</span>
         <span class="n">ppt_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">output_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -11994,10 +11996,12 @@ div#notebook {
         <span class="n">output_filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ppt_path</span><span class="p">,</span> <span class="s2">&quot;output.pptx&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error, I need input a filename&quot;</span><span class="p">)</span>
-        
-<span class="c1">#     ppt_filename=&quot;/test.pptx&quot;</span>
+    
+    <span class="k">assert</span> <span class="p">(</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">())</span><span class="o">==</span><span class="s2">&quot;Darwin&quot;</span>
+    
+<span class="c1">#     ppt_filename=&quot;sample/test.pptx&quot;</span>
 <span class="c1">#     ppt_path=os.path.dirname(ppt_filename)</span>
-    <span class="n">output_filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ppt_path</span><span class="p">,</span> <span class="s2">&quot;output.pptx&quot;</span><span class="p">)</span>
+<span class="c1">#     output_filename=os.path.join(ppt_path, &quot;output.pptx&quot;)</span>
     
     <span class="n">main</span><span class="p">(</span><span class="n">ppt_filename</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">)</span>
 </pre></div>
@@ -12016,17 +12020,18 @@ div#notebook {
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Slide No. 0
-Slide No. 1
-Slide No. 2
-Slide No. 3
-Slide No. 4
-Slide No. 5
-Slide No. 6
-Slide No. 7
-Slide No. 8
-Slide No. 9
-save to  data/output.pptx
+<pre>Darwin
+Slide No. 1 / 10
+Slide No. 2 / 10
+Slide No. 3 / 10
+Slide No. 4 / 10
+Slide No. 5 / 10
+Slide No. 6 / 10
+Slide No. 7 / 10
+Slide No. 8 / 10
+Slide No. 9 / 10
+Slide No. 10 / 10
+save to  sample/output.pptx
 </pre>
 </div>
 </div>
