@@ -49,10 +49,20 @@ def get_notes_text(slide):
 
 
 def save_tts(ve, TEXT, filename):
-    url = Foundation.NSURL.fileURLWithPath_(filename)
-    s=ve.startSpeakingString_toURL_(TEXT,url)    
-    if not(s):
-        print("TTS failed") 
+    if platform.system()=="Darwin":
+        filename=filename+".aiff"
+        url = Foundation.NSURL.fileURLWithPath_(filename)
+        s=ve.startSpeakingString_toURL_(TEXT,url)    
+        if not(s):
+            print("TTS failed") 
+    if platform.system()=="Linux":
+        # 尚未测试
+        filename=filename+".wav"
+        subprocess.call(["espeak",TEXT,"-w", file_name])
+    if platform.system()=="Windows":
+        # 看起来很复杂的样子, 参考: https://github.com/nateshmbhat/pyttsx3/issues/7
+        pass
+    
     return filename
 
 
@@ -60,7 +70,7 @@ def save_tts(ve, TEXT, filename):
 
 
 def save_notes_voice(ve, text, page_number):
-    voice_filename= "temp_tts_{:3d}.aiff".format(page_number)
+    voice_filename= "temp_tts_{:3d}".format(page_number)
     voice_filename= save_tts(ve, text,voice_filename )
     return voice_filename
 
@@ -128,7 +138,7 @@ if __name__=="__main__":
     else:
         print("Error, I need input a filename")
     
-    assert (platform.system())=="Darwin"
+#     assert (platform.system())=="Darwin"
     
 #     ppt_filename="sample/test.pptx"
 #     ppt_path=os.path.dirname(ppt_filename)
