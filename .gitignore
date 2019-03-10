@@ -3,10 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# temp or work files
+# temp or sensitive files
 *.aiff
 *.pptx
 *.mp3
+API_setup.txt
 
 # C extensions
 *.so
