@@ -7,7 +7,7 @@ __pycache__/
 *.aiff
 *.pptx
 *.mp3
-API_setup.txt
+# API_setup.txt
 
 # C extensions
 *.so

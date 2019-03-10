@@ -146,14 +146,24 @@ def main(ppt_filename, output_filename, tts_engine):
 
 
 if __name__=="__main__":
-
-    if len(sys.argv)==3 :
+    
+    if len(sys.argv)==4:
+        ppt_filename=sys.argv[1]
+        output_filename=sys.argv[2]
+        
+        if sys.argv[3]=="--online":
+            tts_engine_flag="Online"
+        else:
+            tts_engine_flag=platform.system()
+        
+    elif len(sys.argv)==3 :
         ppt_filename=sys.argv[1]
         output_filename=sys.argv[2]
     elif len(sys.argv)==2 :
         ppt_filename=sys.argv[1]
         ppt_path=os.path.dirname(ppt_filename)
         output_filename=os.path.join(ppt_path, "output.pptx")
+        
     else:
         print("Error, I need input a filename")
     
@@ -167,6 +177,6 @@ if __name__=="__main__":
                      "Windows":"sapi5",
                      "Online": "xunfei",}
 
-    tts_engine=tts_engine_dict["Online"]
+    tts_engine=tts_engine_dict[tts_engine_flag]
     main(ppt_filename, output_filename, tts_engine)
 
