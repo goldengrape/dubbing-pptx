@@ -18,3 +18,7 @@
 * 使用本地TTS `python dubbing.py inputfile.pptx outputfile.pptx`
 * 使用在线TTS(当前为讯飞) `python dubbing.py inputfile.pptx outputfile.pptx --online`
     * 当使用讯飞TTS时, 需要在API_setup.txt中写入您自己申请讯飞tts的key与ID
+    
+# Acknowledgement
+
+This project is inspired by Sal Soghoian's great work [rendering presenter notes to audio.](https://iworkautomation.com/keynote/slide-presenter-notes.html)

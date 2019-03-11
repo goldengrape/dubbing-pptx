@@ -28,23 +28,23 @@ import os
 # 所以:
 # 写个generator, 从当前位置开始, 切除L个字, 然后在这段里找到最后一个标点位置, 把子串发出, 再把起始位置定在最后一个标点位置
 
-# In[2]:
+# In[10]:
 
 
 if __name__=="__main__":
-    text="这一段话里面有数字2.34也有常规的英文标点. 但我不想把数字给切分开, ,,，,,, 应该怎么做呢?"
+    text="这一段话里面有数字2.34也有常规的英文标点.\n 但我不想把数字给切分开, ,,，,,, 应该怎么做呢?"
 
 
-# In[3]:
+# In[15]:
 
 
 def cut_string(text, Lmax):
-    text+="\n"
+    text=text.replace("\n","")+"\n"
     punc="([\s\S]{3," +str(Lmax)+ "}[,. ，。\n|(?!.\d+)|(?!,\d+)])"
     return iter(re.findall(punc,text))
 
 
-# In[4]:
+# In[16]:
 
 
 if __name__=="__main__":
@@ -68,7 +68,7 @@ def init_xf_tts():
         "auf": "audio/L16;rate=16000",    #音频采样率
         "aue": "lame",    #音频编码，raw(生成wav)或lame(生成mp3)
         "voice_name": "aisjiuxu",
-        "speed": "50",    #语速[0,100]
+        "speed": "75",    #语速[0,100]
         "volume": "77",    #音量[0,100]
         "pitch": "30",    #音高[0,100]
         "engine_type": "aisound"    #引擎类型。aisound（普通效果），intp65（中文），intp65_en（英文）
@@ -114,7 +114,7 @@ def construct_urlencode_utf8(t):
 
 # 短句tts
 
-# In[11]:
+# In[7]:
 
 
 def short_tts(TEXT, xf_tts):
@@ -170,7 +170,7 @@ def xf_save_tts(xf_tts, TEXT, filename):
         os.remove(temp_filename)
 
 
-# In[12]:
+# In[9]:
 
 
 if __name__=="__main__":

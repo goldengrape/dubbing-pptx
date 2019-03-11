@@ -11809,11 +11809,11 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">text</span><span class="o">=</span><span class="s2">&quot;这一段话里面有数字2.34也有常规的英文标点. 但我不想把数字给切分开, ,,，,,, 应该怎么做呢?&quot;</span>
+    <span class="n">text</span><span class="o">=</span><span class="s2">&quot;这一段话里面有数字2.34也有常规的英文标点.</span><span class="se">\n</span><span class="s2"> 但我不想把数字给切分开, ,,，,,, 应该怎么做呢?&quot;</span>
 </pre></div>
 
 </div>
@@ -11823,11 +11823,11 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">cut_string</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">Lmax</span><span class="p">):</span>
-    <span class="n">text</span><span class="o">+=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">punc</span><span class="o">=</span><span class="s2">&quot;([\s\S]{3,&quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">Lmax</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;}[,. ，。</span><span class="se">\n</span><span class="s2">|(?!.\d+)|(?!,\d+)])&quot;</span>
     <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">punc</span><span class="p">,</span><span class="n">text</span><span class="p">))</span>
 </pre></div>
@@ -11839,7 +11839,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -11905,7 +11905,7 @@ div#notebook {
         <span class="s2">&quot;auf&quot;</span><span class="p">:</span> <span class="s2">&quot;audio/L16;rate=16000&quot;</span><span class="p">,</span>    <span class="c1">#音频采样率</span>
         <span class="s2">&quot;aue&quot;</span><span class="p">:</span> <span class="s2">&quot;lame&quot;</span><span class="p">,</span>    <span class="c1">#音频编码，raw(生成wav)或lame(生成mp3)</span>
         <span class="s2">&quot;voice_name&quot;</span><span class="p">:</span> <span class="s2">&quot;aisjiuxu&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="s2">&quot;50&quot;</span><span class="p">,</span>    <span class="c1">#语速[0,100]</span>
+        <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="s2">&quot;75&quot;</span><span class="p">,</span>    <span class="c1">#语速[0,100]</span>
         <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;77&quot;</span><span class="p">,</span>    <span class="c1">#音量[0,100]</span>
         <span class="s2">&quot;pitch&quot;</span><span class="p">:</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>    <span class="c1">#音高[0,100]</span>
         <span class="s2">&quot;engine_type&quot;</span><span class="p">:</span> <span class="s2">&quot;aisound&quot;</span>    <span class="c1">#引擎类型。aisound（普通效果），intp65（中文），intp65_en（英文）</span>
@@ -11972,7 +11972,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">short_tts</span><span class="p">(</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">xf_tts</span><span class="p">):</span>
@@ -12049,7 +12049,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
