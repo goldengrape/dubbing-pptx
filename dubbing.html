@@ -12000,42 +12000,67 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">interpret_opt</span><span class="p">(</span><span class="n">opt</span><span class="p">):</span>
+    <span class="c1"># will rewrite with getopt</span>
+        
+    <span class="n">tts_engine_dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Darwin&quot;</span><span class="p">:</span><span class="s2">&quot;nsss&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;Linux&quot;</span><span class="p">:</span> <span class="s2">&quot;espeak&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;Windows&quot;</span><span class="p">:</span><span class="s2">&quot;sapi5&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;Online&quot;</span><span class="p">:</span> <span class="s2">&quot;xunfei&quot;</span><span class="p">,}</span>
     
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">==</span><span class="mi">4</span><span class="p">:</span>
-        <span class="n">ppt_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">output_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span><span class="o">==</span><span class="mi">4</span><span class="p">:</span>
+        <span class="n">ppt_filename</span><span class="o">=</span><span class="n">opt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">output_filename</span><span class="o">=</span><span class="n">opt</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         
         <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;--online&quot;</span><span class="p">:</span>
             <span class="n">tts_engine_flag</span><span class="o">=</span><span class="s2">&quot;Online&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tts_engine_flag</span><span class="o">=</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span>
         
-    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">==</span><span class="mi">3</span> <span class="p">:</span>
-        <span class="n">ppt_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">output_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span> <span class="p">:</span>
-        <span class="n">ppt_filename</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span><span class="o">==</span><span class="mi">3</span> <span class="p">:</span>
+        <span class="n">ppt_filename</span><span class="o">=</span><span class="n">opt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">output_filename</span><span class="o">=</span><span class="n">opt</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">tts_engine_flag</span><span class="o">=</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ppt_filename</span><span class="o">==</span><span class="s2">&quot;-f&quot;</span><span class="p">:</span>
+            <span class="n">ppt_filename</span><span class="o">=</span><span class="s2">&quot;sample/test.pptx&quot;</span> <span class="c1"># local test</span>
+            <span class="n">ppt_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">ppt_filename</span><span class="p">)</span>
+            <span class="n">output_filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ppt_path</span><span class="p">,</span> <span class="s2">&quot;output.pptx&quot;</span><span class="p">)</span>
+
+
+
+
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span> <span class="p">:</span>
+        <span class="n">ppt_filename</span><span class="o">=</span><span class="n">opt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>    
         <span class="n">ppt_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">ppt_filename</span><span class="p">)</span>
         <span class="n">output_filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ppt_path</span><span class="p">,</span> <span class="s2">&quot;output.pptx&quot;</span><span class="p">)</span>
-        
+        <span class="n">tts_engine_flag</span><span class="o">=</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span>
+
+
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="s2">&quot;参数输入错误&quot;</span><span class="p">)</span>
-    
-    <span class="c1"># local test</span>
-    <span class="n">ppt_filename</span><span class="o">=</span><span class="s2">&quot;sample/test.pptx&quot;</span>
-    <span class="n">ppt_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">ppt_filename</span><span class="p">)</span>
-    <span class="n">output_filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ppt_path</span><span class="p">,</span> <span class="s2">&quot;output.pptx&quot;</span><span class="p">)</span>
-    
-    <span class="n">tts_engine_dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Darwin&quot;</span><span class="p">:</span><span class="s2">&quot;nsss&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Linux&quot;</span><span class="p">:</span> <span class="s2">&quot;espeak&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Windows&quot;</span><span class="p">:</span><span class="s2">&quot;sapi5&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Online&quot;</span><span class="p">:</span> <span class="s2">&quot;xunfei&quot;</span><span class="p">,}</span>
-
     <span class="n">tts_engine</span><span class="o">=</span><span class="n">tts_engine_dict</span><span class="p">[</span><span class="n">tts_engine_flag</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Input file: &quot;</span><span class="p">,</span> <span class="n">ppt_filename</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output file: &quot;</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TTS engine: &quot;</span><span class="p">,</span> <span class="n">tts_engine</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">ppt_filename</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">,</span> <span class="n">tts_engine</span> <span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">ppt_filename</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">,</span> <span class="n">tts_engine</span><span class="o">=</span><span class="n">interpret_opt</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">main</span><span class="p">(</span><span class="n">ppt_filename</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">,</span> <span class="n">tts_engine</span><span class="p">)</span>
 </pre></div>
 
@@ -12053,7 +12078,10 @@ div#notebook {
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Slide No. 1 / 2
+<pre>Input file:  sample/test.pptx
+Output file:  sample/output.pptx
+TTS engine:  nsss
+Slide No. 1 / 2
 Slide No. 2 / 2
 save to  sample/output.pptx
 </pre>

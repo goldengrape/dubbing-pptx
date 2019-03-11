@@ -131,41 +131,59 @@ def main(ppt_filename, output_filename, tts_engine):
     print("save to ",output_filename)
 
 
-# In[9]:
+# In[19]:
 
 
-if __name__=="__main__":
+def interpret_opt(opt):
+    # will rewrite with getopt
+        
+    tts_engine_dict={"Darwin":"nsss",
+                     "Linux": "espeak",
+                     "Windows":"sapi5",
+                     "Online": "xunfei",}
     
-    if len(sys.argv)==4:
-        ppt_filename=sys.argv[1]
-        output_filename=sys.argv[2]
+    if len(opt)==4:
+        ppt_filename=opt[1]
+        output_filename=opt[2]
         
         if sys.argv[3]=="--online":
             tts_engine_flag="Online"
         else:
             tts_engine_flag=platform.system()
         
-    elif len(sys.argv)==3 :
-        ppt_filename=sys.argv[1]
-        output_filename=sys.argv[2]
-    elif len(sys.argv)==2 :
-        ppt_filename=sys.argv[1]
+    elif len(opt)==3 :
+        ppt_filename=opt[1]
+        output_filename=opt[2]
+        tts_engine_flag=platform.system()
+        if ppt_filename=="-f":
+            ppt_filename="sample/test.pptx" # local test
+            ppt_path=os.path.dirname(ppt_filename)
+            output_filename=os.path.join(ppt_path, "output.pptx")
+
+
+
+
+    elif len(opt)==2 :
+        ppt_filename=opt[1]    
         ppt_path=os.path.dirname(ppt_filename)
         output_filename=os.path.join(ppt_path, "output.pptx")
-        
+        tts_engine_flag=platform.system()
+
+
     else:
         raise UserWarning("参数输入错误")
-    
-    # local test
-    ppt_filename="sample/test.pptx"
-    ppt_path=os.path.dirname(ppt_filename)
-    output_filename=os.path.join(ppt_path, "output.pptx")
-    
-    tts_engine_dict={"Darwin":"nsss",
-                     "Linux": "espeak",
-                     "Windows":"sapi5",
-                     "Online": "xunfei",}
-
     tts_engine=tts_engine_dict[tts_engine_flag]
+
+    print("Input file: ", ppt_filename)
+    print("Output file: ", output_filename)
+    print("TTS engine: ", tts_engine)
+    return (ppt_filename, output_filename, tts_engine )
+
+
+# In[20]:
+
+
+if __name__=="__main__":
+    ppt_filename, output_filename, tts_engine=interpret_opt(sys.argv)
     main(ppt_filename, output_filename, tts_engine)
 
