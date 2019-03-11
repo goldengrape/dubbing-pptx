@@ -16,6 +16,7 @@ if platform.system()=="Darwin":
 from pptx import Presentation
 from pptx.util import Inches
 from xunfei_tts import init_xf_tts, xf_save_tts
+from google_speech import Speech
 
 
 # In[2]:
@@ -35,6 +36,8 @@ def init_tts(tts_engine):
         ve = 0
     elif tts_engine=="xunfei":
         ve = init_xf_tts()
+    elif tts_engine=="google":
+        ve = 0
     else:
         ve = 0
     return ve
@@ -73,6 +76,10 @@ def save_tts(ve, TEXT, filename, tts_engine):
     elif tts_engine=="xunfei":
         filename=filename+".mp3"
         xf_save_tts(ve, TEXT, filename)
+    elif tts_engine=="google":
+        filename=filename+".mp3"
+        speech = Speech(TEXT, "zh-cn")
+        speech.save(filename)
     return filename
 
 
@@ -140,16 +147,17 @@ def interpret_opt(opt):
     tts_engine_dict={"Darwin":"nsss",
                      "Linux": "espeak",
                      "Windows":"sapi5",
-                     "Online": "xunfei",}
+                     "xunfei": "xunfei",
+                     "google": "google"}
     
     if len(opt)==4:
         ppt_filename=opt[1]
         output_filename=opt[2]
-        
-        if sys.argv[3]=="--online":
-            tts_engine_flag="Online"
-        else:
-            tts_engine_flag=platform.system()
+        tts_engine_flag = opt[3]
+        if opt[3]=="--online":
+            tts_engine_flag="xunfei"
+#         else:
+#             tts_engine_flag=platform.system()
         
     elif len(opt)==3 :
         ppt_filename=opt[1]
@@ -173,6 +181,7 @@ def interpret_opt(opt):
     else:
         raise UserWarning("参数输入错误")
     tts_engine=tts_engine_dict[tts_engine_flag]
+
 
     print("Input file: ", ppt_filename)
     print("Output file: ", output_filename)
