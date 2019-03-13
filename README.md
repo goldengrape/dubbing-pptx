@@ -27,6 +27,7 @@
         * 当使用讯飞TTS时, 需要在API_setup.txt中写入您自己申请讯飞tts的key与ID
     * google TTS `python dubbing.py inputfile.pptx outputfile.pptx google`
         * 当使用google TTS时, 请自行准备“正常访问国际互联网”的工具. 
+        * 注意中英文混排的句子, google读起来相当可怕. 比如“pubmed”会读成“帕布莫德”. 
     
 # Acknowledgement
 
@@ -37,3 +38,5 @@ This project is inspired by Sal Soghoian's great work [rendering presenter notes
 * 参数表越来越混乱了, 需要修整一下
 * sox似乎没必要安装啊, 看看能否跳过它.
 * google tts读出来的好~慢~呐~, 保存语音的时候似乎没法调整速度, 看看能否用sox或者ffmpeg来调一下. 
+* 不知道能否用BytesIO来改写文件读写的过程, 免得那么多次的磁盘操作
+* 用google tts可能要把中英文分别送到api. “帕布莫德”太可怕了

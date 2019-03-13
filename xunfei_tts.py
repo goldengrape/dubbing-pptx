@@ -127,7 +127,7 @@ def short_tts(TEXT, xf_tts):
     response = urllib.request.urlopen(req)
     response_head = response.headers['Content-Type']
     if(response_head == "text/plain"):
-        raise UserWarning("讯飞WebAPI错误: ", response.read().decode('utf8')["desc"])
+        raise UserWarning("讯飞WebAPI错误: {}".format(response.read().decode('utf8')))
 #     return response.read()
     return response
 
