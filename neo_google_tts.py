@@ -115,7 +115,7 @@ class Speech:
             if __class__.is_EN(segment):
                     now_lang=self.switch_lang
             else:
-                    now_lang=self.lang
+                    now_lang=self.default_lang
             yield SpeechSegment(segment, now_lang, segment_num, len(segments))
 
     def is_EN(text):
@@ -162,23 +162,21 @@ class Speech:
 
         # Build the segments
         preloader_threads = []
-        if self.text != "-":
-            segments = list(self)
-            # start preloader thread(s)
-            preloader_threads = [PreloaderThread(name="PreloaderThread-%u" % (i)) for i in range(PRELOADER_THREAD_COUNT)]
-            for preloader_thread in preloader_threads:
-                preloader_thread.segments = segments
-                preloader_thread.start()
-        else:
-            segments = iter(self)
+        segments = list(self)
+        # start preloader thread(s)
+        preloader_threads = [PreloaderThread(name="PreloaderThread-%u" % (i)) for i in range(PRELOADER_THREAD_COUNT)]
+        for preloader_thread in preloader_threads:
+            preloader_thread.segments = segments
+            preloader_thread.start()
+
 
         # play segments
         for segment in segments:
             segment.play(sox_effects)
 
-        if self.text != "-":
-          # destroy preloader threads
-          for preloader_thread in preloader_threads:
+
+        # destroy preloader threads
+        for preloader_thread in preloader_threads:
             preloader_thread.join()
 
     def save(self, path):
@@ -200,111 +198,111 @@ class Speech:
 
 class SpeechSegment:
 
-  """ Text segment to be read. """
+    """ Text segment to be read. """
 
-  BASE_URL = "https://translate.google.com/translate_tts"
+    BASE_URL = "https://translate.google.com/translate_tts"
 
-  session = requests.Session()
+    session = requests.Session()
 
-  def __init__(self, text, lang, segment_num, segment_count=None):
-    self.text = text
-    self.lang = lang
-    self.segment_num = segment_num
-    self.segment_count = segment_count
-    self.preload_mutex = threading.Lock()
-    if not hasattr(__class__, "cache"):
-      db_filepath = os.path.join(appdirs.user_cache_dir(appname="google_speech",
-                                                        appauthor=False),
-                                 "google_speech-cache.sqlite")
-      os.makedirs(os.path.dirname(db_filepath), exist_ok=True)
-      cache_name = "sound_data"
-      __class__.cache = web_cache.ThreadedWebCache(db_filepath,
-                                                   cache_name,
-                                                   expiration=60 * 60 * 24 * 365,  # 1 year
-                                                   caching_strategy=web_cache.CachingStrategy.LRU)
-      logging.getLogger().debug("Total size of file '%s': %s" % (db_filepath,
-                                                                 __class__.cache.getDatabaseFileSize()))
-      purged_count = __class__.cache.purge()
-      logging.getLogger().debug("%u obsolete entries have been removed from cache '%s'" % (purged_count, cache_name))
-      row_count = len(__class__.cache)
-      logging.getLogger().debug("Cache '%s' contains %u entries" % (cache_name, row_count))
+    def __init__(self, text, lang, segment_num, segment_count=None):
+        self.text = text
+        self.lang = lang
+        self.segment_num = segment_num
+        self.segment_count = segment_count
+        self.preload_mutex = threading.Lock()
+        if not hasattr(__class__, "cache"):
+            db_filepath = os.path.join(appdirs.user_cache_dir(appname="google_speech",
+                                                            appauthor=False),
+                                     "google_speech-cache.sqlite")
+            os.makedirs(os.path.dirname(db_filepath), exist_ok=True)
+            cache_name = "sound_data"
+            __class__.cache = web_cache.ThreadedWebCache(db_filepath,
+                                                       cache_name,
+                                                       expiration=60 * 60 * 24 * 365,  # 1 year
+                                                       caching_strategy=web_cache.CachingStrategy.LRU)
+            logging.getLogger().debug("Total size of file '%s': %s" % (db_filepath,
+                                                                     __class__.cache.getDatabaseFileSize()))
+            purged_count = __class__.cache.purge()
+            logging.getLogger().debug("%u obsolete entries have been removed from cache '%s'" % (purged_count, cache_name))
+            row_count = len(__class__.cache)
+            logging.getLogger().debug("Cache '%s' contains %u entries" % (cache_name, row_count))
 
-  def __str__(self):
-    return self.text
+    def __str__(self):
+        return self.text
 
-  def isInCache(self):
-    """ Return True if audio data for this segment is present in cache, False otherwise. """
-    url = self.buildUrl(cache_friendly=True)
-    return url in __class__.cache
+    def isInCache(self):
+        """ Return True if audio data for this segment is present in cache, False otherwise. """
+        url = self.buildUrl(cache_friendly=True)
+        return url in __class__.cache
 
-  def preLoad(self):
-    """ Store audio data in cache for fast playback. """
-    logging.getLogger().debug("Preloading segment '%s'" % (self))
-    real_url = self.buildUrl()
-    cache_url = self.buildUrl(cache_friendly=True)
-    audio_data = self.download(real_url)
-    assert(audio_data)
-    __class__.cache[cache_url] = audio_data
-
-  def getAudioData(self):
-    """ Fetch the audio data. """
-    with self.preload_mutex:
-      cache_url = self.buildUrl(cache_friendly=True)
-      if cache_url in __class__.cache:
-        logging.getLogger().debug("Got data for URL '%s' from cache" % (cache_url))
-        audio_data = __class__.cache[cache_url]
-        assert(audio_data)
-      else:
+    def preLoad(self):
+        """ Store audio data in cache for fast playback. """
+        logging.getLogger().debug("Preloading segment '%s'" % (self))
         real_url = self.buildUrl()
+        cache_url = self.buildUrl(cache_friendly=True)
         audio_data = self.download(real_url)
         assert(audio_data)
         __class__.cache[cache_url] = audio_data
-    return audio_data
 
-  def play(self, sox_effects=()):
-    """ Play the segment. """
-    audio_data = self.getAudioData()
-    logging.getLogger().info("Playing speech segment (%s): '%s'" % (self.lang, self))
-    cmd = ["sox", "-q", "-t", "mp3", "-"]
-    if sys.platform.startswith("win32"):
-      cmd.extend(("-t", "waveaudio"))
-    cmd.extend(("-d", "trim", "0.1", "reverse", "trim", "0.07", "reverse"))  # "trim", "0.25", "-0.1"
-    cmd.extend(sox_effects)
-    logging.getLogger().debug("Start player process")
-    p = subprocess.Popen(cmd,
-                         stdin=subprocess.PIPE,
-                         stdout=subprocess.DEVNULL)
-    p.communicate(input=audio_data)
-    if p.returncode != 0:
-      raise RuntimeError()
-    logging.getLogger().debug("Done playing")
+    def getAudioData(self):
+        """ Fetch the audio data. """
+        with self.preload_mutex:
+            cache_url = self.buildUrl(cache_friendly=True)
+            if cache_url in __class__.cache:
+                logging.getLogger().debug("Got data for URL '%s' from cache" % (cache_url))
+                audio_data = __class__.cache[cache_url]
+                assert(audio_data)
+            else:
+                real_url = self.buildUrl()
+                audio_data = self.download(real_url)
+                assert(audio_data)
+                __class__.cache[cache_url] = audio_data
+        return audio_data
 
-  def buildUrl(self, cache_friendly=False):
-    """
-    Construct the URL to get the sound from Goggle API.
+    def play(self, sox_effects=()):
+        """ Play the segment. """
+        audio_data = self.getAudioData()
+        logging.getLogger().info("Playing speech segment (%s): '%s'" % (self.lang, self))
+        cmd = ["sox", "-q", "-t", "mp3", "-"]
+        if sys.platform.startswith("win32"):
+            cmd.extend(("-t", "waveaudio"))
+        cmd.extend(("-d", "trim", "0.1", "reverse", "trim", "0.07", "reverse"))  # "trim", "0.25", "-0.1"
+        cmd.extend(sox_effects)
+        logging.getLogger().debug("Start player process")
+        p = subprocess.Popen(cmd,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.DEVNULL)
+        p.communicate(input=audio_data)
+        if p.returncode != 0:
+            raise RuntimeError()
+        logging.getLogger().debug("Done playing")
+    
+    def buildUrl(self, cache_friendly=False):
+        """
+        Construct the URL to get the sound from Goggle API.
 
-    If cache_friendly is True, remove token from URL to use as a cache key.
-    """
-    params = collections.OrderedDict()
-    params["client"] = "tw-ob"
-    params["ie"] = "UTF-8"
-    params["idx"] = str(self.segment_num)
-    if self.segment_count is not None:
-      params["total"] = str(self.segment_count)
-    params["textlen"] = str(len(self.text))
-    params["tl"] = self.lang
-    lower_text = self.text.lower()
-    params["q"] = lower_text
-    return "%s?%s" % (__class__.BASE_URL, urllib.parse.urlencode(params))
+        If cache_friendly is True, remove token from URL to use as a cache key.
+        """
+        params = collections.OrderedDict()
+        params["client"] = "tw-ob"
+        params["ie"] = "UTF-8"
+        params["idx"] = str(self.segment_num)
+        if self.segment_count is not None:
+          params["total"] = str(self.segment_count)
+        params["textlen"] = str(len(self.text))
+        params["tl"] = self.lang
+        lower_text = self.text.lower()
+        params["q"] = lower_text
+        return "%s?%s" % (__class__.BASE_URL, urllib.parse.urlencode(params))
 
-  def download(self, url):
-    """ Download a sound file. """
-    logging.getLogger().debug("Downloading '%s'..." % (url))
-    response = __class__.session.get(url,
-                                     headers={"User-Agent": "Mozilla/5.0"},
-                                     timeout=3.1)
-    response.raise_for_status()
-    return response.content
+    def download(self, url):
+        """ Download a sound file. """
+        logging.getLogger().debug("Downloading '%s'..." % (url))
+        response = __class__.session.get(url,
+                                         headers={"User-Agent": "Mozilla/5.0"},
+                                         timeout=3.1)
+        response.raise_for_status()
+        return response.content
 
 
 # In[7]:
@@ -314,11 +312,6 @@ text= '''
 iPad Pro    测试任务:
 1. 单手持iPad pro, 感觉重量.
 2. 用iPad Pro原装键盘测试中文输入, 看速度和手指按错的错误率.
-3. 用iPad pro原装的笔测试手写输入, 测试画图, 感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适.
-4. 打开 https://www.photopea.com/  看能否在iPad pro的safari上流畅运行, 是否能够满足photoshop的大多数功能, 是否满足常用的照片编辑功能.
-5. 找到安装有adobe lightroom的iPad pro, (问店员, 有些机器为了演示是预装好的). 看能否满足常用的照片编辑. 
-6. 看这些app上的按钮大小是否可以舒适看清, 尽量使用手写笔进行操作, 评估操作舒适程度. 根据重量和操作舒适性选择屏幕的大小. 
-
 '''
 
 
