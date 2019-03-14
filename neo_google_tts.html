@@ -11789,13 +11789,14 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[251]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">google_speech</span> <span class="k">import</span> <span class="n">Speech</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Iterable</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="sd">&quot;&quot;&quot; Read a text using Google Translate TTS API. &quot;&quot;&quot;</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;1.1.0&quot;</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;goldengrape, fork from desbma https://github.com/desbma/GoogleSpeech&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;LGPLv2&quot;</span>
 </pre></div>
 
 </div>
@@ -11805,48 +11806,145 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[258]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">neoSpeech</span><span class="p">(</span><span class="n">Speech</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">default_lang</span><span class="p">,</span> <span class="n">switch_lang</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleanSpaces</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+
+<span class="kn">import</span> <span class="nn">appdirs</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">web_cache</span>
+
+<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">SUPPORTED_LANGUAGES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;af&quot;</span><span class="p">,</span> <span class="s2">&quot;ar&quot;</span><span class="p">,</span> <span class="s2">&quot;bn&quot;</span><span class="p">,</span> <span class="s2">&quot;bs&quot;</span><span class="p">,</span> <span class="s2">&quot;ca&quot;</span><span class="p">,</span> <span class="s2">&quot;cs&quot;</span><span class="p">,</span> <span class="s2">&quot;cy&quot;</span><span class="p">,</span> <span class="s2">&quot;da&quot;</span><span class="p">,</span> <span class="s2">&quot;de&quot;</span><span class="p">,</span> <span class="s2">&quot;el&quot;</span><span class="p">,</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="s2">&quot;en-au&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ca&quot;</span><span class="p">,</span> <span class="s2">&quot;en-gb&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;en-gh&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ie&quot;</span><span class="p">,</span> <span class="s2">&quot;en-in&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ng&quot;</span><span class="p">,</span> <span class="s2">&quot;en-nz&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ph&quot;</span><span class="p">,</span> <span class="s2">&quot;en-tz&quot;</span><span class="p">,</span> <span class="s2">&quot;en-uk&quot;</span><span class="p">,</span> <span class="s2">&quot;en-us&quot;</span><span class="p">,</span> <span class="s2">&quot;en-za&quot;</span><span class="p">,</span> <span class="s2">&quot;eo&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;es&quot;</span><span class="p">,</span> <span class="s2">&quot;es-es&quot;</span><span class="p">,</span> <span class="s2">&quot;es-us&quot;</span><span class="p">,</span> <span class="s2">&quot;et&quot;</span><span class="p">,</span> <span class="s2">&quot;fi&quot;</span><span class="p">,</span> <span class="s2">&quot;fr&quot;</span><span class="p">,</span> <span class="s2">&quot;fr-ca&quot;</span><span class="p">,</span> <span class="s2">&quot;fr-fr&quot;</span><span class="p">,</span> <span class="s2">&quot;hi&quot;</span><span class="p">,</span> <span class="s2">&quot;hr&quot;</span><span class="p">,</span> <span class="s2">&quot;hu&quot;</span><span class="p">,</span> <span class="s2">&quot;hy&quot;</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;is&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;it&quot;</span><span class="p">,</span> <span class="s2">&quot;ja&quot;</span><span class="p">,</span> <span class="s2">&quot;jw&quot;</span><span class="p">,</span> <span class="s2">&quot;km&quot;</span><span class="p">,</span> <span class="s2">&quot;ko&quot;</span><span class="p">,</span> <span class="s2">&quot;la&quot;</span><span class="p">,</span> <span class="s2">&quot;lv&quot;</span><span class="p">,</span> <span class="s2">&quot;mk&quot;</span><span class="p">,</span> <span class="s2">&quot;ml&quot;</span><span class="p">,</span> <span class="s2">&quot;mr&quot;</span><span class="p">,</span> <span class="s2">&quot;my&quot;</span><span class="p">,</span> <span class="s2">&quot;ne&quot;</span><span class="p">,</span> <span class="s2">&quot;nl&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;pl&quot;</span><span class="p">,</span> <span class="s2">&quot;pt&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;pt-br&quot;</span><span class="p">,</span> <span class="s2">&quot;pt-pt&quot;</span><span class="p">,</span> <span class="s2">&quot;ro&quot;</span><span class="p">,</span> <span class="s2">&quot;ru&quot;</span><span class="p">,</span> <span class="s2">&quot;si&quot;</span><span class="p">,</span> <span class="s2">&quot;sk&quot;</span><span class="p">,</span> <span class="s2">&quot;sq&quot;</span><span class="p">,</span> <span class="s2">&quot;sr&quot;</span><span class="p">,</span> <span class="s2">&quot;su&quot;</span><span class="p">,</span> <span class="s2">&quot;sv&quot;</span><span class="p">,</span> <span class="s2">&quot;sw&quot;</span><span class="p">,</span> <span class="s2">&quot;ta&quot;</span><span class="p">,</span> <span class="s2">&quot;te&quot;</span><span class="p">,</span> <span class="s2">&quot;th&quot;</span><span class="p">,</span> <span class="s2">&quot;tl&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;tr&quot;</span><span class="p">,</span> <span class="s2">&quot;uk&quot;</span><span class="p">,</span> <span class="s2">&quot;vi&quot;</span><span class="p">,</span> <span class="s2">&quot;zh-cn&quot;</span><span class="p">,</span> <span class="s2">&quot;zh-tw&quot;</span><span class="p">)</span>
+
+<span class="n">PRELOADER_THREAD_COUNT</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>暂时不太理解这个PreloaderThread</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">PreloaderThread</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
+
+  <span class="sd">&quot;&quot;&quot; Thread to pre load (download and store in cache) audio data of a segment. &quot;&quot;&quot;</span>
+
+  <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">segments</span><span class="p">:</span>
+        <span class="n">acquired</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">acquired</span><span class="p">:</span>
+          <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">segment</span><span class="o">.</span><span class="n">isInCache</span><span class="p">():</span>
+              <span class="n">segment</span><span class="o">.</span><span class="n">preLoad</span><span class="p">()</span>
+          <span class="k">finally</span><span class="p">:</span>
+            <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>处理文本</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">Speech</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot; Text to be read. &quot;&quot;&quot;</span>
+
+    <span class="n">CLEAN_MULTIPLE_SPACES_REGEX</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;\s{2,}&quot;</span><span class="p">)</span>
+    <span class="n">MAX_SEGMENT_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">MIN_SEGMENT_SIZE</span> <span class="o">=</span> <span class="mi">50</span>
+
+    <span class="c1"># 可能有中英文混排的文字, 所以应当设定两种语言. 如果是纯英文的, 两种语言就都设定成en好了. </span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">default_lang</span><span class="p">,</span> <span class="n">switch_lang</span><span class="o">=</span><span class="s1">&#39;en&#39;</span><span class="p">):</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleanSpaces</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lang</span> <span class="o">=</span> <span class="n">default_lang</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_lang</span><span class="o">=</span><span class="n">default_lang</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span><span class="o">=</span><span class="n">switch_lang</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang_pattern</span><span class="o">=</span><span class="vm">__class__</span><span class="o">.</span><span class="n">split_cn_en_pattern</span><span class="p">()</span>
         
-    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get a speech segment, splitting text by taking into account spaces, punctuation, and maximum segment size. &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">isatty</span><span class="p">():</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Stdin is not a pipe&quot;</span><span class="p">)</span>
-                <span class="k">return</span>
-            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">new_line</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">new_line</span><span class="p">:</span>
-                    <span class="k">return</span>
-                <span class="n">segments</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_line</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">is_EN</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
-                        <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span>
-                    <span class="k">yield</span> <span class="n">SpeechSegment</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">now_lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get an iterator over speech segments. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">segments</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-                <span class="k">if</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">is_EN</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
-                        <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span>
-                <span class="k">else</span><span class="p">:</span>
-                        <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span>
-                <span class="k">yield</span> <span class="n">SpeechSegment</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">now_lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a speech segment, </span>
+<span class="sd">        splitting text by taking into account spaces, </span>
+<span class="sd">        punctuation, and maximum segment size. &quot;&quot;&quot;</span>
+        
+        <span class="c1"># 移除了--的部分</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
+            <span class="k">if</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">is_EN</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
+                    <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span>
+            <span class="k">else</span><span class="p">:</span>
+                    <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span>
+            <span class="k">yield</span> <span class="n">SpeechSegment</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">now_lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">is_EN</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
         <span class="n">c</span><span class="o">=</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">((</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;a&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;A&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;Z&quot;</span><span class="p">))</span>
                                        
     <span class="k">def</span> <span class="nf">split_cn_en_pattern</span><span class="p">():</span>
+        
         <span class="n">punc</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span> <span class="o">+</span><span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span><span class="p">)</span>
         <span class="n">regex</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -11864,13 +11962,46 @@ div#notebook {
                               <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">whitespace</span>
                               <span class="o">+</span> <span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span> <span class="c1">#this line is Chinese punctuation</span>
                               <span class="p">)</span>
-        <span class="n">punc</span><span class="o">=</span><span class="s2">&quot;([\s\S]{2,&quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">MAX_SEGMENT_SIZE</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;}[useless_chars|(?!.\d+)|(?!,\d+)])&quot;</span>
+        <span class="n">punc</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;([\s\S]{&quot;</span>
+                 <span class="o">+</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">MIN_SEGMENT_SIZE</span><span class="p">,</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">MAX_SEGMENT_SIZE</span><span class="p">)</span>
+                 <span class="o">+</span> <span class="s2">&quot;}[useless_chars|(?!.\d+)|(?!,\d+)])&quot;</span><span class="p">)</span>
         
         <span class="n">s</span><span class="o">=</span><span class="p">[]</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">punc</span><span class="p">,</span><span class="n">text</span><span class="p">):</span>
             <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang_pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                               
                                        
         <span class="k">return</span> <span class="n">s</span>
+    
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cleanSpaces</span><span class="p">(</span><span class="n">dirty_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove consecutive spaces from a string. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">CLEAN_MULTIPLE_SPACES_REGEX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span>
+                                                     <span class="n">dirty_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sox_effects</span><span class="o">=</span><span class="p">()):</span>
+        <span class="sd">&quot;&quot;&quot; Play a speech. &quot;&quot;&quot;</span>
+
+        <span class="c1"># Build the segments</span>
+        <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+          <span class="n">segments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+          <span class="c1"># start preloader thread(s)</span>
+          <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[</span><span class="n">PreloaderThread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;PreloaderThread-</span><span class="si">%u</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">PRELOADER_THREAD_COUNT</span><span class="p">)]</span>
+          <span class="k">for</span> <span class="n">preloader_thread</span> <span class="ow">in</span> <span class="n">preloader_threads</span><span class="p">:</span>
+            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span>
+            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">segments</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># play segments</span>
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+          <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">sox_effects</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+          <span class="c1"># destroy preloader threads</span>
+          <span class="k">for</span> <span class="n">preloader_thread</span> <span class="ow">in</span> <span class="n">preloader_threads</span><span class="p">:</span>
+            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Save audio data to file or BytesIO. &quot;&quot;&quot;</span>
@@ -11891,7 +12022,126 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[259]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">SpeechSegment</span><span class="p">:</span>
+
+  <span class="sd">&quot;&quot;&quot; Text segment to be read. &quot;&quot;&quot;</span>
+
+  <span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://translate.google.com/translate_tts&quot;</span>
+
+  <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment_count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">segment_num</span> <span class="o">=</span> <span class="n">segment_num</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">segment_count</span> <span class="o">=</span> <span class="n">segment_count</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">preload_mutex</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;cache&quot;</span><span class="p">):</span>
+      <span class="n">db_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">appdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">&quot;google_speech&quot;</span><span class="p">,</span>
+                                                        <span class="n">appauthor</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                                 <span class="s2">&quot;google_speech-cache.sqlite&quot;</span><span class="p">)</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">db_filepath</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+      <span class="n">cache_name</span> <span class="o">=</span> <span class="s2">&quot;sound_data&quot;</span>
+      <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">web_cache</span><span class="o">.</span><span class="n">ThreadedWebCache</span><span class="p">(</span><span class="n">db_filepath</span><span class="p">,</span>
+                                                   <span class="n">cache_name</span><span class="p">,</span>
+                                                   <span class="n">expiration</span><span class="o">=</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span><span class="p">,</span>  <span class="c1"># 1 year</span>
+                                                   <span class="n">caching_strategy</span><span class="o">=</span><span class="n">web_cache</span><span class="o">.</span><span class="n">CachingStrategy</span><span class="o">.</span><span class="n">LRU</span><span class="p">)</span>
+      <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Total size of file &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">db_filepath</span><span class="p">,</span>
+                                                                 <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">getDatabaseFileSize</span><span class="p">()))</span>
+      <span class="n">purged_count</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+      <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%u</span><span class="s2"> obsolete entries have been removed from cache &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">purged_count</span><span class="p">,</span> <span class="n">cache_name</span><span class="p">))</span>
+      <span class="n">row_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
+      <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cache &#39;</span><span class="si">%s</span><span class="s2">&#39; contains </span><span class="si">%u</span><span class="s2"> entries&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">row_count</span><span class="p">))</span>
+
+  <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span>
+
+  <span class="k">def</span> <span class="nf">isInCache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Return True if audio data for this segment is present in cache, False otherwise. &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">(</span><span class="n">cache_friendly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">url</span> <span class="ow">in</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span>
+
+  <span class="k">def</span> <span class="nf">preLoad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Store audio data in cache for fast playback. &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preloading segment &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+    <span class="n">real_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">()</span>
+    <span class="n">cache_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">(</span><span class="n">cache_friendly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">real_url</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
+    <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
+
+  <span class="k">def</span> <span class="nf">getAudioData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Fetch the audio data. &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">preload_mutex</span><span class="p">:</span>
+      <span class="n">cache_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">(</span><span class="n">cache_friendly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">cache_url</span> <span class="ow">in</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got data for URL &#39;</span><span class="si">%s</span><span class="s2">&#39; from cache&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cache_url</span><span class="p">))</span>
+        <span class="n">audio_data</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">real_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">()</span>
+        <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">real_url</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
+        <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
+    <span class="k">return</span> <span class="n">audio_data</span>
+
+  <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sox_effects</span><span class="o">=</span><span class="p">()):</span>
+    <span class="sd">&quot;&quot;&quot; Play the segment. &quot;&quot;&quot;</span>
+    <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Playing speech segment (</span><span class="si">%s</span><span class="s2">): &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sox&quot;</span><span class="p">,</span> <span class="s2">&quot;-q&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="s2">&quot;mp3&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;win32&quot;</span><span class="p">):</span>
+      <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="s2">&quot;waveaudio&quot;</span><span class="p">))</span>
+    <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="s2">&quot;-d&quot;</span><span class="p">,</span> <span class="s2">&quot;trim&quot;</span><span class="p">,</span> <span class="s2">&quot;0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;reverse&quot;</span><span class="p">,</span> <span class="s2">&quot;trim&quot;</span><span class="p">,</span> <span class="s2">&quot;0.07&quot;</span><span class="p">,</span> <span class="s2">&quot;reverse&quot;</span><span class="p">))</span>  <span class="c1"># &quot;trim&quot;, &quot;0.25&quot;, &quot;-0.1&quot;</span>
+    <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sox_effects</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Start player process&quot;</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span>
+                         <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">audio_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done playing&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">buildUrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_friendly</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Construct the URL to get the sound from Goggle API.</span>
+
+<span class="sd">    If cache_friendly is True, remove token from URL to use as a cache key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tw-ob&quot;</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;ie&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;UTF-8&quot;</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_num</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">params</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_count</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;textlen&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;tl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lang</span>
+    <span class="n">lower_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower_text</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">?</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">BASE_URL</span><span class="p">,</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+
+  <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Download a sound file. &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Downloading &#39;</span><span class="si">%s</span><span class="s2">&#39;...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">))</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span>
+                                     <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla/5.0&quot;</span><span class="p">},</span>
+                                     <span class="n">timeout</span><span class="o">=</span><span class="mf">3.1</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">text</span><span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
@@ -11913,211 +12163,25 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[260]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># say &quot;Hello World&quot;</span>
-<span class="n">speech</span> <span class="o">=</span> <span class="n">neoSpeech</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;zh-cn&#39;</span><span class="p">,</span><span class="s1">&#39;en&#39;</span><span class="p">)</span>
+<span class="c1"># text = &quot;Hello World&quot;</span>
+<span class="n">lang</span> <span class="o">=</span> <span class="s2">&quot;zh-cn&quot;</span>
+<span class="n">speech</span> <span class="o">=</span> <span class="n">Speech</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
 <span class="n">speech</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 
 <span class="c1"># you can also apply audio effects while playing (using SoX)</span>
 <span class="c1"># see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation</span>
-<span class="n">sox_effects</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;speed&quot;</span><span class="p">,</span> <span class="s2">&quot;1.5&quot;</span><span class="p">)</span>
-<span class="n">speech</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">sox_effects</span><span class="p">)</span>
+<span class="c1"># sox_effects = (&quot;speed&quot;, &quot;1.5&quot;)</span>
+<span class="c1"># speech.play(sox_effects)</span>
 
 <span class="c1"># save the speech to an MP3 file (no effect is applied)</span>
-<span class="n">f</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
-<span class="n">speech</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">speech</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;output.mp3&quot;</span><span class="p">)</span>
 </pre></div>
 
 </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-260-8bd8be2a92d7&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># say &#34;Hello World&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> speech <span class="ansi-blue-fg">=</span> neoSpeech<span class="ansi-blue-fg">(</span>text<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;zh-cn&#39;</span><span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">&#39;en&#39;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>speech<span class="ansi-blue-fg">.</span>play<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      4</span> 
-<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-red-fg"># you can also apply audio effects while playing (using SoX)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/site-packages/google_speech/__init__.py</span> in <span class="ansi-cyan-fg">play</span><span class="ansi-blue-fg">(self, sox_effects)</span>
-<span class="ansi-green-intense-fg ansi-bold">    127</span>     preloader_threads <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">    128</span>     <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>text <span class="ansi-blue-fg">!=</span> <span class="ansi-blue-fg">&#34;-&#34;</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 129</span><span class="ansi-red-fg">       </span>segments <span class="ansi-blue-fg">=</span> list<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    130</span>       <span class="ansi-red-fg"># start preloader thread(s)</span>
-<span class="ansi-green-intense-fg ansi-bold">    131</span>       preloader_threads <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>PreloaderThread<span class="ansi-blue-fg">(</span>name<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;PreloaderThread-%u&#34;</span> <span class="ansi-blue-fg">%</span> <span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>PRELOADER_THREAD_COUNT<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
-
-<span class="ansi-green-fg">&lt;ipython-input-258-ab4d3331fc89&gt;</span> in <span class="ansi-cyan-fg">__next__</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">     31</span>                 <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     32</span>                         now_lang<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>lang
-<span class="ansi-green-fg">---&gt; 33</span><span class="ansi-red-fg">                 </span><span class="ansi-green-fg">yield</span> SpeechSegment<span class="ansi-blue-fg">(</span>segment<span class="ansi-blue-fg">,</span> now_lang<span class="ansi-blue-fg">,</span> segment_num<span class="ansi-blue-fg">,</span> len<span class="ansi-blue-fg">(</span>segments<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     34</span> 
-<span class="ansi-green-intense-fg ansi-bold">     35</span>     <span class="ansi-green-fg">def</span> is_EN<span class="ansi-blue-fg">(</span>text<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;SpeechSegment&#39; is not defined</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[225]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">split_cn_en_pattern</span><span class="p">():</span>
-    <span class="n">punc</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span> <span class="o">+</span><span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span><span class="p">)</span>
-    <span class="n">regex</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="c1"># Match a English string with space:</span>
-    <span class="n">regex</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;[a-zA-Z ]+&quot;</span><span class="o">+</span><span class="n">punc</span><span class="o">+</span><span class="s2">&quot;*&quot;</span><span class="p">]</span>
-    <span class="c1"># Match a Chinese string:</span>
-    <span class="n">regex</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;[</span><span class="se">\u4e00</span><span class="s1">-</span><span class="se">\ufaff</span><span class="s1">0-9]+&#39;</span><span class="o">+</span><span class="n">punc</span><span class="o">+</span><span class="s2">&quot;*&quot;</span><span class="p">]</span>
-    <span class="n">regex</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
-
-<span class="n">pattern</span><span class="o">=</span><span class="n">split_cn_en_pattern</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>[&#39;iPad Pro    &#39;, &#39;测试任务:&#39;, &#39;1.&#39;, &#39; &#39;, &#39;单手持9&#39;, &#39;iPad pro,&#39;, &#39; &#39;, &#39;感觉重量.&#39;, &#39;2.&#39;, &#39; &#39;, &#39;用&#39;, &#39;iPad Pro&#39;, &#39;原装键盘测试中文输入,&#39;, &#39; &#39;, &#39;看速度和手指按错的错误率.&#39;, &#39;3.&#39;, &#39; &#39;, &#39;用&#39;, &#39;iPad pro&#39;, &#39;原装的笔测试手写输入,&#39;, &#39; &#39;, &#39;测试画图,&#39;, &#39; &#39;, &#39;感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适&#39;, &#39;4.&#39;, &#39; &#39;, &#39;打开&#39;, &#39; https://&#39;, &#39;www.&#39;, &#39;photopea.&#39;, &#39;com/&#39;, &#39;  &#39;, &#39;看能否在&#39;, &#39;iPad pro&#39;, &#39;的&#39;, &#39;safari&#39;, &#39;上流畅运行,&#39;, &#39; &#39;, &#39;是否能够满足&#39;, &#39;photoshop&#39;, &#39;的大多数功能,&#39;, &#39; &#39;, &#39;是否满足常用的照片编辑功能.&#39;, &#39;5.&#39;, &#39; &#39;, &#39;找到安装有&#39;, &#39;adobe lightroom&#39;, &#39;的&#39;, &#39;iPad pro,&#39;, &#39; (&#39;, &#39;问店员,&#39;, &#39; &#39;, &#39;有些机器为了演示是预装好的).&#39;, &#39; &#39;, &#39;看能否满足常用的照片编辑.&#39;, &#39; &#39;, &#39;6.&#39;, &#39; &#39;, &#39;看这些&#39;, &#39;app&#39;, &#39;上的按钮大小是否可以舒适看清,&#39;, &#39; &#39;, &#39;尽量使用手写笔进行操作,&#39;, &#39; &#39;, &#39;评估操作舒适程度.&#39;, &#39; &#39;, &#39;根据重量和操作舒适性选择屏幕的大小.&#39;, &#39; &#39;]
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[238]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">is_EN</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">c</span><span class="o">=</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;a&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;A&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;Z&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">is_EN</span><span class="p">(</span><span class="s1">&#39;测试任务:&#39;</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>False
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[221]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">is_EN</span><span class="p">(</span><span class="s1">&#39;测试任务:&#39;</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[221]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>True</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[236]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;iPad Pro    &#39;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">c</span><span class="o">=</span><span class="s1">&#39;测试任务:&#39;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="p">(</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;a&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;A&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;Z&quot;</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[236]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>False</pre>
-</div>
-
-</div>
-
 </div>
 </div>
 
