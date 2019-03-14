@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>Untitled</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>neo_google_tts</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11775,7 +11775,14 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>测试在内存内合并音频</p>
+<p>重构google_speech</p>
+<p>Forked from <a href="https://github.com/desbma/GoogleSpeech">https://github.com/desbma/GoogleSpeech</a></p>
+<p>在如下几个方面进行改变:</p>
+<ul>
+<li>在中英文混合的语句中, 中文要读中文, 英文要读英文. 因为是调用了Google translate的非官方API, 所以Pubmed居然会被读成“帕布莫德”这样的可怕中文名. </li>
+<li>支持BytesIO的读写, 并在内存内完成音频的拼接</li>
+<li>移除sox支持, 使之称为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. </li>
+</ul>
 
 </div>
 </div>
