@@ -11919,7 +11919,7 @@ div#notebook {
         <span class="bp">self</span><span class="o">.</span><span class="n">default_lang</span><span class="o">=</span><span class="n">default_lang</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span><span class="o">=</span><span class="n">switch_lang</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang_pattern</span><span class="o">=</span><span class="vm">__class__</span><span class="o">.</span><span class="n">split_cn_en_pattern</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cn_en_pattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_pattern</span><span class="o">=</span><span class="vm">__class__</span><span class="o">.</span><span class="n">split_pattern</span><span class="p">()</span>
         
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get an iterator over speech segments. &quot;&quot;&quot;</span>
@@ -11941,35 +11941,34 @@ div#notebook {
 
     <span class="k">def</span> <span class="nf">is_EN</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
         <span class="n">c</span><span class="o">=</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">((</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;a&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">c</span><span class="o">&gt;=</span><span class="s1">&#39;A&#39;</span> <span class="ow">and</span> <span class="n">c</span><span class="o">&lt;=</span><span class="s2">&quot;Z&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span><span class="p">)</span>
                                        
-    <span class="k">def</span> <span class="nf">split_cn_en_pattern</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">split_pattern</span><span class="p">():</span>
+        <span class="n">cn_punc</span><span class="o">=</span><span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span> <span class="c1">#this line is Chinese punctuation</span>
+        <span class="n">en_punc</span><span class="o">=</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span>
+        <span class="n">cn_en_pattern</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+            <span class="s1">&#39;[a-zA-Z ]+|[</span><span class="si">{}</span><span class="se">\u4e00</span><span class="s1">-</span><span class="se">\u9fa5</span><span class="s1">0-9 </span><span class="si">{}</span><span class="s1">]+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">en_punc</span><span class="p">,</span><span class="n">cn_punc</span><span class="p">)</span>
+        <span class="p">)</span>
         
-        <span class="n">punc</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span> <span class="o">+</span><span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span><span class="p">)</span>
-        <span class="n">regex</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="c1"># Match a English string with space:</span>
-        <span class="n">regex</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;[a-zA-Z ]+&quot;</span><span class="o">+</span><span class="n">punc</span><span class="o">+</span><span class="s2">&quot;*&quot;</span><span class="p">]</span>
-        <span class="c1"># Match a Chinese string:</span>
-        <span class="n">regex</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;[</span><span class="se">\u4e00</span><span class="s1">-</span><span class="se">\ufaff</span><span class="s1">0-9]+&#39;</span><span class="o">+</span><span class="n">punc</span><span class="o">+</span><span class="s2">&quot;*&quot;</span><span class="p">]</span>
-        <span class="n">regex</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
-
-    
-    <span class="k">def</span> <span class="nf">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">text</span><span class="p">):</span>
         <span class="n">useless_chars</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
-                              <span class="n">string</span><span class="o">.</span><span class="n">punctuation</span> 
+                              <span class="n">en_punc</span> 
                               <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">whitespace</span>
-                              <span class="o">+</span> <span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span> <span class="c1">#this line is Chinese punctuation</span>
+                              <span class="o">+</span> <span class="n">cn_punc</span> 
                               <span class="p">)</span>
-        <span class="n">punc</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;([\s\S]{&quot;</span>
+        <span class="n">split_pattern</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;([\s\S]{&quot;</span>
                  <span class="o">+</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">MIN_SEGMENT_SIZE</span><span class="p">,</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">MAX_SEGMENT_SIZE</span><span class="p">)</span>
                  <span class="o">+</span> <span class="s2">&quot;}[useless_chars|(?!.\d+)|(?!,\d+)])&quot;</span><span class="p">)</span>
         
+        <span class="k">return</span> <span class="n">cn_en_pattern</span><span class="p">,</span> <span class="n">split_pattern</span>
+
+    
+    <span class="k">def</span> <span class="nf">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">text</span><span class="p">):</span>
         <span class="n">s</span><span class="o">=</span><span class="p">[]</span>
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">punc</span><span class="p">,</span><span class="n">text</span><span class="p">):</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang_pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                               
-                                       
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cn_en_pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">&gt;</span><span class="vm">__class__</span><span class="o">.</span><span class="n">MAX_SEGMENT_SIZE</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">split_pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">s</span>
     
 
@@ -11977,7 +11976,7 @@ div#notebook {
     <span class="k">def</span> <span class="nf">cleanSpaces</span><span class="p">(</span><span class="n">dirty_string</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Remove consecutive spaces from a string. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">CLEAN_MULTIPLE_SPACES_REGEX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span>
-                                                     <span class="n">dirty_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                                                     <span class="n">dirty_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sox_effects</span><span class="o">=</span><span class="p">()):</span>
         <span class="sd">&quot;&quot;&quot; Play a speech. &quot;&quot;&quot;</span>
@@ -11985,18 +11984,18 @@ div#notebook {
         <span class="c1"># Build the segments</span>
         <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
-          <span class="n">segments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-          <span class="c1"># start preloader thread(s)</span>
-          <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[</span><span class="n">PreloaderThread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;PreloaderThread-</span><span class="si">%u</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">PRELOADER_THREAD_COUNT</span><span class="p">)]</span>
-          <span class="k">for</span> <span class="n">preloader_thread</span> <span class="ow">in</span> <span class="n">preloader_threads</span><span class="p">:</span>
-            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span>
-            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="n">segments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="c1"># start preloader thread(s)</span>
+            <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[</span><span class="n">PreloaderThread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;PreloaderThread-</span><span class="si">%u</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">PRELOADER_THREAD_COUNT</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">preloader_thread</span> <span class="ow">in</span> <span class="n">preloader_threads</span><span class="p">:</span>
+                <span class="n">preloader_thread</span><span class="o">.</span><span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span>
+                <span class="n">preloader_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-          <span class="n">segments</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">segments</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># play segments</span>
         <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
-          <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">sox_effects</span><span class="p">)</span>
+            <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">sox_effects</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
           <span class="c1"># destroy preloader threads</span>
@@ -12019,6 +12018,15 @@ div#notebook {
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>朗读</p>
+
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
@@ -12146,9 +12154,9 @@ div#notebook {
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">text</span><span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">iPad Pro    测试任务:</span>
-<span class="s1">1. 单手持9iPad pro, 感觉重量.</span>
+<span class="s1">1. 单手持iPad pro, 感觉重量.</span>
 <span class="s1">2. 用iPad Pro原装键盘测试中文输入, 看速度和手指按错的错误率.</span>
-<span class="s1">3. 用iPad pro原装的笔测试手写输入, 测试画图, 感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适</span>
+<span class="s1">3. 用iPad pro原装的笔测试手写输入, 测试画图, 感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适.</span>
 <span class="s1">4. 打开 https://www.photopea.com/  看能否在iPad pro的safari上流畅运行, 是否能够满足photoshop的大多数功能, 是否满足常用的照片编辑功能.</span>
 <span class="s1">5. 找到安装有adobe lightroom的iPad pro, (问店员, 有些机器为了演示是预装好的). 看能否满足常用的照片编辑. </span>
 <span class="s1">6. 看这些app上的按钮大小是否可以舒适看清, 尽量使用手写笔进行操作, 评估操作舒适程度. 根据重量和操作舒适性选择屏幕的大小. </span>
@@ -12172,16 +12180,36 @@ div#notebook {
 <span class="n">speech</span> <span class="o">=</span> <span class="n">Speech</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
 <span class="n">speech</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 
+<span class="nb">print</span><span class="p">(</span><span class="n">speech</span><span class="o">.</span><span class="n">splitText</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+
 <span class="c1"># you can also apply audio effects while playing (using SoX)</span>
 <span class="c1"># see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation</span>
 <span class="c1"># sox_effects = (&quot;speed&quot;, &quot;1.5&quot;)</span>
 <span class="c1"># speech.play(sox_effects)</span>
 
 <span class="c1"># save the speech to an MP3 file (no effect is applied)</span>
-<span class="n">speech</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;output.mp3&quot;</span><span class="p">)</span>
+<span class="c1"># speech.save(&quot;output.mp3&quot;)</span>
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&#39;iPad Pro    &#39;, &#39;测试任务:&#39;, &#39;1. 单手持&#39;, &#39;iPad pro&#39;, &#39;, 感觉重量.&#39;, &#39;2. 用&#39;, &#39;iPad Pro&#39;, &#39;原装键盘测试中文输入, 看速度和手指按错的错误率.&#39;, &#39;3. 用&#39;, &#39;iPad pro&#39;, &#39;原装的笔测试手写输入, 测试画图, 感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适&#39;, &#39;4. 打开 &#39;, &#39;https&#39;, &#39;://&#39;, &#39;www&#39;, &#39;.&#39;, &#39;photopea&#39;, &#39;.&#39;, &#39;com&#39;, &#39;/  看能否在&#39;, &#39;iPad pro&#39;, &#39;的&#39;, &#39;safari&#39;, &#39;上流畅运行, 是否能够满足&#39;, &#39;photoshop&#39;, &#39;的大多数功能, 是否满足常用的照片编辑功能.&#39;, &#39;5. 找到安装有&#39;, &#39;adobe lightroom&#39;, &#39;的&#39;, &#39;iPad pro&#39;, &#39;, (问店员, 有些机器为了演示是预装好的). 看能否满足常用的照片编辑. &#39;, &#39;6. 看这些&#39;, &#39;app&#39;, &#39;上的按钮大小是否可以舒适看清, 尽量使用手写笔进行操作, 评估操作舒适程度. 根据重量和操作舒适性选择屏幕的大小. &#39;]
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 

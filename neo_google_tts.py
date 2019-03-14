@@ -98,7 +98,7 @@ class Speech:
         self.default_lang=default_lang
         self.switch_lang=switch_lang
         
-        self.switch_lang_pattern=__class__.split_cn_en_pattern()
+        self.cn_en_pattern, self.split_pattern=__class__.split_pattern()
         
     def __iter__(self):
         """ Get an iterator over speech segments. """
@@ -120,35 +120,34 @@ class Speech:
 
     def is_EN(text):
         c=text[0]
-        return ((c>='a' and c<="z") or (c>='A' and c<="Z"))
+        return (c in string.ascii_letters)
                                        
-    def split_cn_en_pattern():
+    def split_pattern():
+        cn_punc="！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-" #this line is Chinese punctuation
+        en_punc=string.punctuation
+        cn_en_pattern=re.compile(
+            '[a-zA-Z ]+|[{}\u4e00-\u9fa50-9 {}]+'.format(en_punc,cn_punc)
+        )
         
-        punc='[{}]'.format(string.punctuation +"！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-")
-        regex = []
-
-        # Match a English string with space:
-        regex += ["[a-zA-Z ]+"+punc+"*"]
-        # Match a Chinese string:
-        regex += ['[\u4e00-\ufaff0-9]+'+punc+"*"]
-        regex = "|".join(regex)
-        return re.compile(regex)
-
-    
-    def splitText(self,text):
         useless_chars = frozenset(
-                              string.punctuation 
+                              en_punc 
                               + string.whitespace
-                              + "！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-" #this line is Chinese punctuation
+                              + cn_punc 
                               )
-        punc=("([\s\S]{"
+        split_pattern=re.compile("([\s\S]{"
                  +"{},{}".format(__class__.MIN_SEGMENT_SIZE, __class__.MAX_SEGMENT_SIZE)
                  + "}[useless_chars|(?!.\d+)|(?!,\d+)])")
         
+        return cn_en_pattern, split_pattern
+
+    
+    def splitText(self,text):
         s=[]
-        for t in re.findall(punc,text):
-            s += self.switch_lang_pattern.findall(t)                               
-                                       
+        for t in self.cn_en_pattern.findall(text):
+            if len(t)>__class__.MAX_SEGMENT_SIZE:
+                s.append(self.split_pattern.findall(t))
+            else:
+                s.append(t)
         return s
     
 
@@ -156,7 +155,7 @@ class Speech:
     def cleanSpaces(dirty_string):
         """ Remove consecutive spaces from a string. """
         return __class__.CLEAN_MULTIPLE_SPACES_REGEX.sub(" ",
-                                                     dirty_string.replace("\n", " ").replace("\t", " ").strip())
+                                                     dirty_string.replace("\n\n", "\n").replace("\t", " ").strip())
 
     def play(self, sox_effects=()):
         """ Play a speech. """
@@ -164,18 +163,18 @@ class Speech:
         # Build the segments
         preloader_threads = []
         if self.text != "-":
-          segments = list(self)
-          # start preloader thread(s)
-          preloader_threads = [PreloaderThread(name="PreloaderThread-%u" % (i)) for i in range(PRELOADER_THREAD_COUNT)]
-          for preloader_thread in preloader_threads:
-            preloader_thread.segments = segments
-            preloader_thread.start()
+            segments = list(self)
+            # start preloader thread(s)
+            preloader_threads = [PreloaderThread(name="PreloaderThread-%u" % (i)) for i in range(PRELOADER_THREAD_COUNT)]
+            for preloader_thread in preloader_threads:
+                preloader_thread.segments = segments
+                preloader_thread.start()
         else:
-          segments = iter(self)
+            segments = iter(self)
 
         # play segments
         for segment in segments:
-          segment.play(sox_effects)
+            segment.play(sox_effects)
 
         if self.text != "-":
           # destroy preloader threads
@@ -193,6 +192,8 @@ class Speech:
             for segment in self:
                 path.write(segment.getAudioData())
 
+
+# 朗读
 
 # In[6]:
 
@@ -311,9 +312,9 @@ class SpeechSegment:
 
 text= '''
 iPad Pro    测试任务:
-1. 单手持9iPad pro, 感觉重量.
+1. 单手持iPad pro, 感觉重量.
 2. 用iPad Pro原装键盘测试中文输入, 看速度和手指按错的错误率.
-3. 用iPad pro原装的笔测试手写输入, 测试画图, 感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适
+3. 用iPad pro原装的笔测试手写输入, 测试画图, 感觉笔尖在屏幕上滑动时摩擦力是否感觉舒适.
 4. 打开 https://www.photopea.com/  看能否在iPad pro的safari上流畅运行, 是否能够满足photoshop的大多数功能, 是否满足常用的照片编辑功能.
 5. 找到安装有adobe lightroom的iPad pro, (问店员, 有些机器为了演示是预装好的). 看能否满足常用的照片编辑. 
 6. 看这些app上的按钮大小是否可以舒适看清, 尽量使用手写笔进行操作, 评估操作舒适程度. 根据重量和操作舒适性选择屏幕的大小. 
@@ -330,11 +331,13 @@ lang = "zh-cn"
 speech = Speech(text, lang)
 speech.play()
 
+print(speech.splitText(text))
+
 # you can also apply audio effects while playing (using SoX)
 # see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation
 # sox_effects = ("speed", "1.5")
 # speech.play(sox_effects)
 
 # save the speech to an MP3 file (no effect is applied)
-speech.save("output.mp3")
+# speech.save("output.mp3")
 
