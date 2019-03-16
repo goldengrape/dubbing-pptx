@@ -93,7 +93,7 @@ class Speech:
     MIN_SEGMENT_SIZE = 50
 
     # 可能有中英文混排的文字, 所以应当设定两种语言. 如果是纯英文的, 两种语言就都设定成en好了. 
-    def __init__(self, text, default_lang, switch_lang='en'): 
+    def __init__(self, text, default_lang, switch_lang='en-us'): 
         self.text = self.cleanSpaces(text)+"."
         self.lang = default_lang
         self.default_lang=default_lang
@@ -117,6 +117,7 @@ class Speech:
                     now_lang=self.switch_lang
             else:
                     now_lang=self.default_lang
+#             print(segment, now_lang, segment_num, len(segments) )
             yield SpeechSegment(segment, now_lang, segment_num, len(segments))
 
     def is_EN(text):
@@ -127,7 +128,7 @@ class Speech:
         cn_punc="！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-" #this line is Chinese punctuation
         en_punc=string.punctuation
         cn_en_pattern=re.compile(
-            '[a-zA-Z ]+|[{}\u4e00-\u9fa50-9 {}]+'.format(en_punc,cn_punc)
+            '[{}a-zA-Z ]+|[{}\u4e00-\u9fa50-9 {}]+'.format(en_punc,en_punc,cn_punc)
         )
         
         useless_chars = frozenset(
@@ -146,7 +147,7 @@ class Speech:
         s=[]
         for t in self.cn_en_pattern.findall(text):
             if len(t)>__class__.MAX_SEGMENT_SIZE:
-                s.append(self.split_pattern.findall(t))
+                s+=self.split_pattern.findall(t)
             else:
                 s.append(t)
         return s
@@ -185,6 +186,7 @@ class Speech:
         if isinstance(path, str):
             with open(path, "wb") as f:
                 for segment in self:
+                    print(segment)
                     f.write(segment.getAudioData())
         
         if isinstance(path, BytesIO):
@@ -304,34 +306,4 @@ class SpeechSegment:
                                          timeout=3.1)
         response.raise_for_status()
         return response.content
-
-
-# In[7]:
-
-
-text= '''
-iPad Pro    测试任务:
-1. 单手持iPad pro, 感觉重量.
-2. 用iPad Pro原装键盘测试中文输入, 看速度和手指按错的错误率.
-'''
-
-
-# In[8]:
-
-
-# say "Hello World"
-# text = "Hello World"
-lang = "zh-cn"
-speech = Speech(text, lang)
-speech.play()
-
-print(speech.splitText(text))
-
-# you can also apply audio effects while playing (using SoX)
-# see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation
-# sox_effects = ("speed", "1.5")
-# speech.play(sox_effects)
-
-# save the speech to an MP3 file (no effect is applied)
-# speech.save("output.mp3")
 
