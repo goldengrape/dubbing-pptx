@@ -11874,16 +11874,16 @@ div#notebook {
 
   <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
-      <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">segments</span><span class="p">:</span>
-        <span class="n">acquired</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">acquired</span><span class="p">:</span>
-          <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">segment</span><span class="o">.</span><span class="n">isInCache</span><span class="p">():</span>
-              <span class="n">segment</span><span class="o">.</span><span class="n">preLoad</span><span class="p">()</span>
-          <span class="k">finally</span><span class="p">:</span>
-            <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">segments</span><span class="p">:</span>
+            <span class="n">acquired</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">acquired</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">segment</span><span class="o">.</span><span class="n">isInCache</span><span class="p">():</span>
+                        <span class="n">segment</span><span class="o">.</span><span class="n">preLoad</span><span class="p">()</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-      <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -11938,7 +11938,6 @@ div#notebook {
                     <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span>
             <span class="k">else</span><span class="p">:</span>
                     <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_lang</span>
-<span class="c1">#             print(segment, now_lang, segment_num, len(segments) )</span>
             <span class="k">yield</span> <span class="n">SpeechSegment</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">now_lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">is_EN</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
@@ -12003,16 +12002,15 @@ div#notebook {
             <span class="n">preloader_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Save audio data to file or BytesIO. &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">())</span>
-        
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">BytesIO</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="n">path</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">())</span>
+        <span class="sd">&quot;&quot;&quot; Save audio data to an MP3 file. &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">savef</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">savef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write audio data into a file object. &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">(</span> <span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">())</span>
 </pre></div>
 
 </div>
@@ -12096,6 +12094,7 @@ div#notebook {
                 <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
                 <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
         <span class="k">return</span> <span class="n">audio_data</span>
+        
 
     <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sox_effects</span><span class="o">=</span><span class="p">()):</span>
         <span class="sd">&quot;&quot;&quot; Play the segment. &quot;&quot;&quot;</span>

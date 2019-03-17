@@ -11771,53 +11771,19 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
 <div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">google_tts</span> <span class="k">import</span> <span class="n">Speech</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">pydub</span> <span class="k">import</span> <span class="n">AudioSegment</span>
-
-<span class="c1"># say &quot;Hello World&quot;</span>
-<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Hello World, 你好世界!&quot;</span>
-<span class="n">lang</span> <span class="o">=</span> <span class="s2">&quot;zh-tw&quot;</span>
-<span class="n">speech</span> <span class="o">=</span> <span class="n">Speech</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
-<span class="c1"># speech.play()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">speech</span><span class="o">.</span><span class="n">splitText</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
-
-<span class="c1"># you can also apply audio effects while playing (using SoX)</span>
-<span class="c1"># see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation</span>
-<span class="c1"># sox_effects = (&quot;speed&quot;, &quot;1.5&quot;)</span>
-<span class="c1"># speech.play(sox_effects)</span>
-
-<span class="c1"># save the speech to an MP3 file (no effect is applied)</span>
-</pre></div>
-
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="from-google_tts-import-Speech">from google_tts import Speech<a class="anchor-link" href="#from-google_tts-import-Speech">&#182;</a></h1><p>from io import BytesIO
+from pydub import AudioSegment</p>
+<h1 id="say-&quot;Hello-World&quot;">say "Hello World"<a class="anchor-link" href="#say-&quot;Hello-World&quot;">&#182;</a></h1><p>text = "Hello World, 你好世界!"
+lang = "zh-tw"
+speech = Speech(text, lang)</p>
+<h1 id="speech.play()">speech.play()<a class="anchor-link" href="#speech.play()">&#182;</a></h1><p>print(speech.splitText(text))</p>
+<h1 id="you-can-also-apply-audio-effects-while-playing-(using-SoX)">you can also apply audio effects while playing (using SoX)<a class="anchor-link" href="#you-can-also-apply-audio-effects-while-playing-(using-SoX)">&#182;</a></h1><h1 id="see-http://sox.sourceforge.net/sox.html#EFFECTS-for-full-effect-documentation">see <a href="http://sox.sourceforge.net/sox.html#EFFECTS">http://sox.sourceforge.net/sox.html#EFFECTS</a> for full effect documentation<a class="anchor-link" href="#see-http://sox.sourceforge.net/sox.html#EFFECTS-for-full-effect-documentation">&#182;</a></h1><h1 id="sox_effects-=-(&quot;speed&quot;,-&quot;1.5&quot;)">sox_effects = ("speed", "1.5")<a class="anchor-link" href="#sox_effects-=-(&quot;speed&quot;,-&quot;1.5&quot;)">&#182;</a></h1><h1 id="speech.play(sox_effects)">speech.play(sox_effects)<a class="anchor-link" href="#speech.play(sox_effects)">&#182;</a></h1><h1 id="save-the-speech-to-an-MP3-file-(no-effect-is-applied)">save the speech to an MP3 file (no effect is applied)<a class="anchor-link" href="#save-the-speech-to-an-MP3-file-(no-effect-is-applied)">&#182;</a></h1>
 </div>
 </div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>[&#39;Hello World, &#39;, &#39;你好世界!&#39;]
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
@@ -11878,6 +11844,32 @@ Full text links,
 </div>
 </div>
 
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">google_speech</span> <span class="k">import</span> <span class="n">Speech</span>
+
+<span class="c1"># say &quot;Hello World&quot;</span>
+<span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;The atomic structure of the nucleosome has been revealed by X-ray crystallography,&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;delineating how this is important&quot;</span><span class="p">]</span>
+<span class="n">lang</span> <span class="o">=</span> <span class="s2">&quot;en&quot;</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+    <span class="n">speech</span> <span class="o">=</span> <span class="n">Speech</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="s1">&#39;en&#39;</span><span class="p">)</span>
+    <span class="n">speech</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+
+<span class="c1"># you can also apply audio effects while playing (using SoX)</span>
+<span class="c1"># see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation</span>
+<span class="c1"># sox_effects = (&quot;speed&quot;, &quot;1.5&quot;)</span>
+<span class="c1"># speech.play(sox_effects)</span>
+</pre></div>
+
+</div>
 </div>
 </div>
 

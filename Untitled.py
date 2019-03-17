@@ -1,28 +1,26 @@
 
 # coding: utf-8
 
-# In[1]:
-
-
-from google_tts import Speech
-from io import BytesIO
-from pydub import AudioSegment
-
-# say "Hello World"
-text = "Hello World, 你好世界!"
-lang = "zh-tw"
-speech = Speech(text, lang)
-# speech.play()
-
-print(speech.splitText(text))
-
-# you can also apply audio effects while playing (using SoX)
-# see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation
-# sox_effects = ("speed", "1.5")
-# speech.play(sox_effects)
-
-# save the speech to an MP3 file (no effect is applied)
-
+# # from google_tts import Speech
+# from io import BytesIO
+# from pydub import AudioSegment
+# 
+# # say "Hello World"
+# text = "Hello World, 你好世界!"
+# lang = "zh-tw"
+# speech = Speech(text, lang)
+# # speech.play()
+# 
+# print(speech.splitText(text))
+# 
+# # you can also apply audio effects while playing (using SoX)
+# # see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation
+# # sox_effects = ("speed", "1.5")
+# # speech.play(sox_effects)
+# 
+# # save the speech to an MP3 file (no effect is applied)
+# 
+# 
 
 # In[2]:
 
@@ -44,4 +42,23 @@ text='''
 speech = Speech(text, lang)
 print(speech.splitText(text))
 speech.save("error.mp3")
+
+
+# In[5]:
+
+
+from google_speech import Speech
+
+# say "Hello World"
+text = ["The atomic structure of the nucleosome has been revealed by X-ray crystallography,", 
+        "delineating how this is important"]
+lang = "en"
+for t in text:
+    speech = Speech(t,'en')
+    speech.play()
+
+# you can also apply audio effects while playing (using SoX)
+# see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation
+# sox_effects = ("speed", "1.5")
+# speech.play(sox_effects)
 

@@ -67,16 +67,16 @@ class PreloaderThread(threading.Thread):
 
   def run(self):
     try:
-      for segment in self.segments:
-        acquired = segment.preload_mutex.acquire(blocking=False)
-        if acquired:
-          try:
-            if not segment.isInCache():
-              segment.preLoad()
-          finally:
-            segment.preload_mutex.release()
+        for segment in self.segments:
+            acquired = segment.preload_mutex.acquire(blocking=False)
+            if acquired:
+                try:
+                    if not segment.isInCache():
+                        segment.preLoad()
+                finally:
+                    segment.preload_mutex.release()
     except Exception as e:
-      logging.getLogger().error("%s: %s" % (e.__class__.__qualname__, e))
+        logging.getLogger().error("%s: %s" % (e.__class__.__qualname__, e))
 
 
 # 处理文本
@@ -117,7 +117,6 @@ class Speech:
                     now_lang=self.switch_lang
             else:
                     now_lang=self.default_lang
-#             print(segment, now_lang, segment_num, len(segments) )
             yield SpeechSegment(segment, now_lang, segment_num, len(segments))
 
     def is_EN(text):
@@ -182,16 +181,15 @@ class Speech:
             preloader_thread.join()
 
     def save(self, path):
-        """ Save audio data to file or BytesIO. """
-        if isinstance(path, str):
-            with open(path, "wb") as f:
-                for segment in self:
-                    print(segment)
-                    f.write(segment.getAudioData())
-        
-        if isinstance(path, BytesIO):
-            for segment in self:
-                path.write(segment.getAudioData())
+        """ Save audio data to an MP3 file. """
+        with open(path, "wb") as f:
+            self.savef(f)
+
+    def savef(self, file):
+        """ Write audio data into a file object. """
+        for segment in self:
+            segment.play( )
+            file.write(segment.getAudioData())
 
 
 # 朗读
@@ -261,6 +259,7 @@ class SpeechSegment:
                 assert(audio_data)
                 __class__.cache[cache_url] = audio_data
         return audio_data
+        
 
     def play(self, sox_effects=()):
         """ Play the segment. """
