@@ -16,29 +16,15 @@ text = "这一句话This sentence中既有中文又有English，"
 
 lang = "zh-cn"
 speech = neo_Speech(text,lang)
+speech.save("test.mp3")
 
 
-# In[2]:
-
-
-text = "This sentence has both Chinese and English" 
-# This sentence has both Chinese and English.
-
-lang = "en-us"
-speech = ori_Speech(text,lang)
-f = BytesIO()
-speech.save("en.mp3")
-dataen = open('en.mp3', 'rb').read()
-f.write(dataen)
-en_voice = AudioSegment.from_mp3(BytesIO(dataen))
-# play(en_voice)
-
-
-# In[5]:
-
-
-combined = AudioSegment.empty()
-combined += cn_voice
-combined += en_voice
-play(combined)
-
+# configuration: 
+# --prefix=/usr/local/Cellar/ffmpeg/4.1.1-with-options 
+# --enable-shared 
+# --enable-hardcoded-tables 
+# --cc=clang 
+# --host-cflags= --host-ldflags= 
+# --enable-gpl 
+# --enable-libaom 
+# --enable-libmp3lame --enable-libopus --enable-libsnappy --enable-libtheora --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-libfontconfig --enable-libfreetype --enable-frei0r --enable-libass --disable-libjack --disable-indev=jack --enable-opencl --enable-videotoolbox --disable-htmlpages --enable-libfdk-aac --enable-libopenh264 --enable-librsvg --enable-libsrt --enable-libvidstab --enable-libxvid --enable-nonfree

@@ -204,8 +204,16 @@ class Speech:
         combined = AudioSegment.empty()
         for segment in self:
             combined += segment.getAudioData()
+        combined.export(file, 
+                        format="mp3",
+                        codec="libmp3lame")
+    def test(self):
+        combined = AudioSegment.empty()
+        for segment in self:
+            combined += segment.getAudioData()
+        play(combined)         
 #             segment.play( )
-        file.write(combined)
+#         file.write(combined)
 
 
 # 朗读

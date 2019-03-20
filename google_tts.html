@@ -12024,8 +12024,16 @@ Input #0, mp3, from 'b.mp3':
         <span class="n">combined</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="n">combined</span> <span class="o">+=</span> <span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
+        <span class="n">combined</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> 
+                        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mp3&quot;</span><span class="p">,</span>
+                        <span class="n">codec</span><span class="o">=</span><span class="s2">&quot;libmp3lame&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">combined</span> <span class="o">+=</span> <span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
+        <span class="n">play</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>         
 <span class="c1">#             segment.play( )</span>
-        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+<span class="c1">#         file.write(combined)</span>
 </pre></div>
 
 </div>
