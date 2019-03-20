@@ -201,9 +201,11 @@ class Speech:
 
     def savef(self, file):
         """ Write audio data into a file object. """
+        combined = AudioSegment.empty()
         for segment in self:
+            combined += segment.getAudioData()
 #             segment.play( )
-            file.write(segment.getAudioData())
+        file.write(combined)
 
 
 # 朗读
@@ -272,26 +274,27 @@ class SpeechSegment:
                 audio_data = self.download(real_url)
                 assert(audio_data)
                 __class__.cache[cache_url] = audio_data
-        return audio_data
+        return AudioSegment.from_mp3(BytesIO(audio_data))
         
 
     def play(self, sox_effects=()):
         """ Play the segment. """
         audio_data = self.getAudioData()
         logging.getLogger().info("Playing speech segment (%s): '%s'" % (self.lang, self))
-        cmd = ["sox", "-q", "-t", "mp3", "-"]
-        if sys.platform.startswith("win32"):
-            cmd.extend(("-t", "waveaudio"))
-        cmd.extend(("-d", "trim", "0.1", "reverse", "trim", "0.07", "reverse"))  # "trim", "0.25", "-0.1"
-        cmd.extend(sox_effects)
-        logging.getLogger().debug("Start player process")
-        p = subprocess.Popen(cmd,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.DEVNULL)
-        p.communicate(input=audio_data)
-        if p.returncode != 0:
-            raise RuntimeError()
-        logging.getLogger().debug("Done playing")
+        play(audio_data)
+#         cmd = ["sox", "-q", "-t", "mp3", "-"]
+#         if sys.platform.startswith("win32"):
+#             cmd.extend(("-t", "waveaudio"))
+#         cmd.extend(("-d", "trim", "0.1", "reverse", "trim", "0.07", "reverse"))  # "trim", "0.25", "-0.1"
+#         cmd.extend(sox_effects)
+#         logging.getLogger().debug("Start player process")
+#         p = subprocess.Popen(cmd,
+#                              stdin=subprocess.PIPE,
+#                              stdout=subprocess.DEVNULL)
+#         p.communicate(input=audio_data)
+#         if p.returncode != 0:
+#             raise RuntimeError()
+#         logging.getLogger().debug("Done playing")
     
     def buildUrl(self, cache_friendly=False):
         """
