@@ -11963,7 +11963,7 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">clean_temp</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">):</span>
-<span class="c1">#     os.remove(voice_filename)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">voice_filename</span><span class="p">)</span>
     <span class="k">pass</span>
     
 </pre></div>
@@ -12025,7 +12025,7 @@ div#notebook {
         <span class="n">output_filename</span><span class="o">=</span><span class="n">opt</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">tts_engine_flag</span> <span class="o">=</span> <span class="n">opt</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">opt</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;--online&quot;</span><span class="p">:</span>
-            <span class="n">tts_engine_flag</span><span class="o">=</span><span class="s2">&quot;xunfei&quot;</span>
+            <span class="n">tts_engine_flag</span><span class="o">=</span><span class="s2">&quot;google&quot;</span>
 <span class="c1">#         else:</span>
 <span class="c1">#             tts_engine_flag=platform.system()</span>
         

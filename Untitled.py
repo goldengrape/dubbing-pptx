@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[7]:
 
 
 from google_tts import Speech as neo_Speech
@@ -34,8 +34,22 @@ speech.savef(f)
 # --enable-libaom 
 # --enable-libmp3lame --enable-libopus --enable-libsnappy --enable-libtheora --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-libfontconfig --enable-libfreetype --enable-frei0r --enable-libass --disable-libjack --disable-indev=jack --enable-opencl --enable-videotoolbox --disable-htmlpages --enable-libfdk-aac --enable-libopenh264 --enable-librsvg --enable-libsrt --enable-libvidstab --enable-libxvid --enable-nonfree
 
-# In[5]:
+# In[13]:
 
 
-play(f.getvalue())
+from pptx import Presentation
+from pptx.util import Inches
+
+ppt_filename="sample/test.pptx"
+output_filename="sample/test_output.pptx"
+prs = Presentation(ppt_filename)
+left = top = Inches(0.0)
+width = height = Inches(1.0)
+for index, slide in enumerate(prs.slides): 
+    shapes = slide.shapes
+    movie = shapes.add_movie(f,  # 貌似不可以用
+                             left , top , width , height, 
+                             poster_frame_image=None, 
+                             mime_type='video/unknown')
+prs.save(output_filename)
 

@@ -11773,7 +11773,7 @@ div#notebook {
 
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">google_tts</span> <span class="k">import</span> <span class="n">Speech</span> <span class="k">as</span> <span class="n">neo_Speech</span>
@@ -11820,50 +11820,27 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">play</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">pptx</span> <span class="k">import</span> <span class="n">Presentation</span>
+<span class="kn">from</span> <span class="nn">pptx.util</span> <span class="k">import</span> <span class="n">Inches</span>
+
+<span class="n">ppt_filename</span><span class="o">=</span><span class="s2">&quot;sample/test.pptx&quot;</span>
+<span class="n">output_filename</span><span class="o">=</span><span class="s2">&quot;sample/test_output.pptx&quot;</span>
+<span class="n">prs</span> <span class="o">=</span> <span class="n">Presentation</span><span class="p">(</span><span class="n">ppt_filename</span><span class="p">)</span>
+<span class="n">left</span> <span class="o">=</span> <span class="n">top</span> <span class="o">=</span> <span class="n">Inches</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">width</span> <span class="o">=</span> <span class="n">height</span> <span class="o">=</span> <span class="n">Inches</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">slide</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">prs</span><span class="o">.</span><span class="n">slides</span><span class="p">):</span> 
+    <span class="n">shapes</span> <span class="o">=</span> <span class="n">slide</span><span class="o">.</span><span class="n">shapes</span>
+    <span class="n">movie</span> <span class="o">=</span> <span class="n">shapes</span><span class="o">.</span><span class="n">add_movie</span><span class="p">(</span><span class="n">f</span><span class="p">,</span>  <span class="c1"># 貌似不可以用</span>
+                             <span class="n">left</span> <span class="p">,</span> <span class="n">top</span> <span class="p">,</span> <span class="n">width</span> <span class="p">,</span> <span class="n">height</span><span class="p">,</span> 
+                             <span class="n">poster_frame_image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                             <span class="n">mime_type</span><span class="o">=</span><span class="s1">&#39;video/unknown&#39;</span><span class="p">)</span>
+<span class="n">prs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_filename</span><span class="p">)</span>
 </pre></div>
 
 </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">AttributeError</span>                            Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-5-8be0014fbc85&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>play<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">.</span>getvalue<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/site-packages/pydub/playback.py</span> in <span class="ansi-cyan-fg">play</span><span class="ansi-blue-fg">(audio_segment)</span>
-<span class="ansi-green-intense-fg ansi-bold">     51</span> <span class="ansi-green-fg">def</span> play<span class="ansi-blue-fg">(</span>audio_segment<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     52</span>     <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 53</span><span class="ansi-red-fg">         </span>playback <span class="ansi-blue-fg">=</span> _play_with_simpleaudio<span class="ansi-blue-fg">(</span>audio_segment<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     54</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     55</span>             playback<span class="ansi-blue-fg">.</span>wait_done<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/site-packages/pydub/playback.py</span> in <span class="ansi-cyan-fg">_play_with_simpleaudio</span><span class="ansi-blue-fg">(seg)</span>
-<span class="ansi-green-intense-fg ansi-bold">     42</span>     <span class="ansi-green-fg">import</span> simpleaudio
-<span class="ansi-green-intense-fg ansi-bold">     43</span>     return simpleaudio.play_buffer(
-<span class="ansi-green-fg">---&gt; 44</span><span class="ansi-red-fg">         </span>seg<span class="ansi-blue-fg">.</span>raw_data<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">     45</span>         num_channels<span class="ansi-blue-fg">=</span>seg<span class="ansi-blue-fg">.</span>channels<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">     46</span>         bytes_per_sample<span class="ansi-blue-fg">=</span>seg<span class="ansi-blue-fg">.</span>sample_width<span class="ansi-blue-fg">,</span>
-
-<span class="ansi-red-fg">AttributeError</span>: &#39;bytes&#39; object has no attribute &#39;raw_data&#39;</pre>
-</div>
-</div>
-
 </div>
 </div>
 

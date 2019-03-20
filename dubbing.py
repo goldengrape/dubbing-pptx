@@ -114,7 +114,7 @@ def insert_voice(voice_filename, slide):
 
 
 def clean_temp(voice_filename):
-#     os.remove(voice_filename)
+    os.remove(voice_filename)
     pass
     
 
@@ -156,7 +156,7 @@ def interpret_opt(opt):
         output_filename=opt[2]
         tts_engine_flag = opt[3]
         if opt[3]=="--online":
-            tts_engine_flag="xunfei"
+            tts_engine_flag="google"
 #         else:
 #             tts_engine_flag=platform.system()
         
