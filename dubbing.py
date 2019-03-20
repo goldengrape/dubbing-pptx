@@ -9,14 +9,15 @@
 # In[1]:
 
 
-import sys, os , subprocess, time, platform
+import sys, os , subprocess, time, platform, json
 if platform.system()=="Darwin":
     from  AppKit import NSSpeechSynthesizer
     import Foundation
 from pptx import Presentation
 from pptx.util import Inches
-from xunfei_tts import init_xf_tts, xf_save_tts
-from google_tts import Speech
+# from xunfei_tts import init_xf_tts, xf_save_tts
+from google_tts import Speech as gSpeech
+from xunfei_tts import Speech as xf_Speech
 
 
 # In[2]:
@@ -35,7 +36,10 @@ def init_tts(tts_engine):
     elif tts_engine=="sapi5":
         ve = 0
     elif tts_engine=="xunfei":
-        ve = init_xf_tts()
+#         ve = init_xf_tts()
+        with open('API_setup.txt') as json_file:  
+            api = json.load(json_file)
+            ve = xf_Speech(api, voice_name="x_yifeng")
     elif tts_engine=="google":
         ve = 0
     else:
@@ -75,11 +79,12 @@ def save_tts(ve, TEXT, filename, tts_engine):
         pass
     elif tts_engine=="xunfei":
         filename=filename+".mp3"
-        xf_save_tts(ve, TEXT, filename)
+#         xf_save_tts(ve, TEXT, filename)
+        ve.save(TEXT,filename)
     elif tts_engine=="google":
         filename=filename+".mp3"
-        speech = Speech(TEXT, "zh-cn","en")
-        speech.save(filename)
+        ve = gSpeech(TEXT, "zh-cn","en")
+        ve.save(filename)
     return filename
 
 

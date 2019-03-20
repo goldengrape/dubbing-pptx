@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>Untitled</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>xunfei_tts_old</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11771,6 +11771,336 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">pydub</span> <span class="k">import</span> <span class="n">AudioSegment</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#20998;&#21106;&#38271;&#23383;&#31526;&#20018;">&#20998;&#21106;&#38271;&#23383;&#31526;&#20018;<a class="anchor-link" href="#&#20998;&#21106;&#38271;&#23383;&#31526;&#20018;">&#182;</a></h2><p>想用讯飞tts念长文章, webapi有长度限制, 所以要把一段字符串切分成多个, 切分时如果切断了英文单词或者中文词, 听起来就会很别扭. 所以, 将一个字符串分成若干子串, 子串的末尾以标点符号或者空格结尾(数字中小数点除外), 每个子串的长度是不超过L的最大值</p>
+<p>思路:</p>
+<p>@gttnnn:
+我当年在s60v2上因为类似的原因做了类似的事情，好像是txt大于10k还是多少讯飞那个app就打开超级慢。我是拿大文件整个读出来切出L那么一块，然后rfind找到最后一个句号。没有用正则是怕手机性能不够，没敢用😅</p>
+<p>所以:
+写个generator, 从当前位置开始, 切除L个字, 然后在这段里找到最后一个标点位置, 把子串发出, 再把起始位置定在最后一个标点位置</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">cut_string</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">Lmax</span><span class="p">):</span>
+    <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">punc</span><span class="o">=</span><span class="s2">&quot;([\s\S]{3,&quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">Lmax</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;}[,. ，。</span><span class="se">\n</span><span class="s2">|(?!.\d+)|(?!,\d+)])&quot;</span>
+    <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">punc</span><span class="p">,</span><span class="n">text</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">sub_t</span> <span class="ow">in</span> <span class="n">cut_string</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">sub_t</span><span class="p">)</span>
+    
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>这一段话里面有数字2.34
+也有常规的英文标点. 
+但我不想把数字给切分开, ,,，,,, 
+应该怎么做呢?
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="&#35759;&#39134;tts">&#35759;&#39134;tts<a class="anchor-link" href="#&#35759;&#39134;tts">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>按照讯飞的要求, 分别配置设置的字符串, http请求的head和body</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">init_xf_tts</span><span class="p">():</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;API_setup.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>  
+        <span class="n">api</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+    <span class="c1"># 构造输出音频配置参数</span>
+    <span class="n">Param</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;auf&quot;</span><span class="p">:</span> <span class="s2">&quot;audio/L16;rate=16000&quot;</span><span class="p">,</span>    <span class="c1">#音频采样率</span>
+        <span class="s2">&quot;aue&quot;</span><span class="p">:</span> <span class="s2">&quot;lame&quot;</span><span class="p">,</span>    <span class="c1">#音频编码，raw(生成wav)或lame(生成mp3)</span>
+        <span class="s2">&quot;voice_name&quot;</span><span class="p">:</span> <span class="s2">&quot;x_yifeng&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="s2">&quot;60&quot;</span><span class="p">,</span>    <span class="c1">#语速[0,100]</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;100&quot;</span><span class="p">,</span>    <span class="c1">#音量[0,100]</span>
+        <span class="s2">&quot;pitch&quot;</span><span class="p">:</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>    <span class="c1">#音高[0,100]</span>
+        <span class="s2">&quot;engine_type&quot;</span><span class="p">:</span> <span class="s2">&quot;aisound&quot;</span>    <span class="c1">#引擎类型。aisound（普通效果），intp65（中文），intp65_en（英文）</span>
+    <span class="p">}</span>
+    <span class="n">Lmax</span><span class="o">=</span><span class="mi">300</span>
+    <span class="n">xf_tts</span><span class="o">=</span><span class="p">(</span><span class="n">Param</span><span class="p">,</span> <span class="n">api</span><span class="p">,</span><span class="n">Lmax</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xf_tts</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">construct_base64_str</span><span class="p">(</span><span class="n">Param</span><span class="p">):</span>
+    <span class="c1"># 配置参数编码为base64字符串，过程：字典→明文字符串→utf8编码→base64(bytes)→base64字符串</span>
+    <span class="n">Param_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">Param</span><span class="p">)</span>    <span class="c1">#得到明文字符串</span>
+    <span class="n">Param_utf8</span> <span class="o">=</span> <span class="n">Param_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>    <span class="c1">#得到utf8编码(bytes类型)</span>
+    <span class="n">Param_b64</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">Param_utf8</span><span class="p">)</span>    <span class="c1">#得到base64编码(bytes类型)</span>
+    <span class="n">Param_b64str</span> <span class="o">=</span> <span class="n">Param_b64</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>    <span class="c1">#得到base64字符串</span>
+    <span class="k">return</span> <span class="n">Param_b64str</span>
+
+<span class="k">def</span> <span class="nf">construct_header</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">Param_b64str</span><span class="p">):</span>
+    <span class="c1"># 构造HTTP请求的头部</span>
+    <span class="n">time_now</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+    <span class="n">checksum</span> <span class="o">=</span> <span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">time_now</span> <span class="o">+</span> <span class="n">Param_b64str</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+    <span class="n">checksum_md5</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">checksum</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;X-Appid&quot;</span><span class="p">:</span> <span class="n">api</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;X-CurTime&quot;</span><span class="p">:</span> <span class="n">time_now</span><span class="p">,</span>
+        <span class="s2">&quot;X-Param&quot;</span><span class="p">:</span> <span class="n">Param_b64str</span><span class="p">,</span>
+        <span class="s2">&quot;X-CheckSum&quot;</span><span class="p">:</span> <span class="n">checksum_md5</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">header</span>
+
+<span class="k">def</span> <span class="nf">construct_urlencode_utf8</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="c1"># 构造HTTP请求Body</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">t</span>
+    <span class="p">}</span>
+    <span class="n">body_urlencode</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+    <span class="n">body_utf8</span> <span class="o">=</span> <span class="n">body_urlencode</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">body_utf8</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>短句tts</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">short_tts</span><span class="p">(</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">xf_tts</span><span class="p">):</span>
+    <span class="n">Param</span><span class="p">,</span> <span class="n">api</span><span class="p">,</span> <span class="n">Lmax</span><span class="o">=</span><span class="n">xf_tts</span>
+    <span class="c1"># 发送HTTP POST请求</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
+        <span class="n">api</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> 
+        <span class="n">data</span><span class="o">=</span><span class="n">construct_urlencode_utf8</span><span class="p">(</span><span class="n">TEXT</span><span class="p">),</span> 
+        <span class="n">headers</span><span class="o">=</span><span class="n">construct_header</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">construct_base64_str</span><span class="p">(</span><span class="n">Param</span><span class="p">)))</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+    <span class="n">response_head</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">response_head</span> <span class="o">==</span> <span class="s2">&quot;text/plain&quot;</span><span class="p">):</span>
+        <span class="n">err_msg</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="s2">&quot;讯飞WebAPI错误: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err_msg</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]))</span>
+<span class="c1">#     return response.read()</span>
+    <span class="k">return</span> <span class="n">response</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>长句tts</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">long_tts</span><span class="p">(</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">xf_tts</span><span class="p">):</span>
+    <span class="n">Param</span><span class="p">,</span> <span class="n">api</span><span class="p">,</span> <span class="n">Lmax</span><span class="o">=</span><span class="n">xf_tts</span>
+    <span class="n">data</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sub_text</span> <span class="ow">in</span> <span class="n">cut_string</span><span class="p">(</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">Lmax</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">short_tts</span><span class="p">(</span><span class="n">sub_text</span><span class="p">,</span> <span class="n">xf_tts</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+<span class="c1">#         data+=short_tts(sub_text, xf_tts)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">xf_save_tts</span><span class="p">(</span><span class="n">xf_tts</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">long_tts</span><span class="p">(</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">xf_tts</span><span class="p">)</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">voice_piece</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">combined</span> <span class="o">+=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">from_mp3</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">voice_piece</span><span class="p">))</span>
+    <span class="n">combined</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> 
+                <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mp3&quot;</span><span class="p">,</span>
+                <span class="n">codec</span><span class="o">=</span><span class="s2">&quot;libmp3lame&quot;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">text</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">只要晶状体出现浑浊，就叫白内障cataract。</span>
+<span class="s1">所以白内障实际上是一个很宽泛的概念。</span>
+<span class="s1">我们知道人眼有2个透镜，1个是角膜，1个是晶状体, 相当于照相机上的镜头组，如果镜头之中有任何1个是混浊的，那么都会影响成像的质量。白内障可以是一部分的混浊，也可以是完全的混浊，</span>
+<span class="s1">白内障患者的视觉有可能是部分影响，觉得看东西模糊, 也可能是完全就看不见了。如果双眼晶状体都完全浑浊不透光, 那么患者就是盲人了. </span>
+
+<span class="s1">白内障是全球第一位的致盲性眼病，但白内障导致的眼盲是可逆的，我们后面讲只要做白内障手术，就可以使白内障患者重见光明。</span>
+
+<span class="s1">一个人, 如果眼睛看不到了，不但他自己失去工作和独立生活的能力，还需要有一个人来照顾她。这样就导致另一个人也无法继续工作. </span>
+<span class="s1">所以, 一个家庭可能会因为白内障致盲而从正常走向贫困。</span>
+
+<span class="s1">但幸好白内障是可逆性的致盲性眼病，所以反过来说, 如果将白内障治好了, 那么她的家庭很可能因此而脱贫。</span>
+
+<span class="s1">这就是为什么我们经常会听到有白内障扶贫手术这样的慈善活动. </span>
+<span class="s1">顺便说, 你是否知道全球不可逆的致盲性眼病，首要的原因是什么? 答案是青光眼。</span>
+
+<span class="s1">    &#39;&#39;&#39;</span>
+    <span class="n">xf_tts</span><span class="o">=</span><span class="n">init_xf_tts</span><span class="p">()</span>
+    <span class="n">xf_save_tts</span><span class="p">(</span><span class="n">xf_tts</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="s2">&quot;tts_test.mp3&quot;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">UserWarning</span>                               Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-9-20c94b986b3a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">     18</span>     &#39;&#39;&#39;
+<span class="ansi-green-intense-fg ansi-bold">     19</span>     xf_tts<span class="ansi-blue-fg">=</span>init_xf_tts<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 20</span><span class="ansi-red-fg">     </span>xf_save_tts<span class="ansi-blue-fg">(</span>xf_tts<span class="ansi-blue-fg">,</span> text<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;tts_test.mp3&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-8-be785a587cd8&gt;</span> in <span class="ansi-cyan-fg">xf_save_tts</span><span class="ansi-blue-fg">(xf_tts, TEXT, filename)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> 
+<span class="ansi-green-intense-fg ansi-bold">     10</span> <span class="ansi-green-fg">def</span> xf_save_tts<span class="ansi-blue-fg">(</span>xf_tts<span class="ansi-blue-fg">,</span> TEXT<span class="ansi-blue-fg">,</span> filename<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">     </span>data<span class="ansi-blue-fg">=</span>long_tts<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">,</span> xf_tts<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>     combined <span class="ansi-blue-fg">=</span> AudioSegment<span class="ansi-blue-fg">.</span>empty<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>     <span class="ansi-green-fg">for</span> index<span class="ansi-blue-fg">,</span> voice_piece <span class="ansi-green-fg">in</span> enumerate<span class="ansi-blue-fg">(</span>data<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-8-be785a587cd8&gt;</span> in <span class="ansi-cyan-fg">long_tts</span><span class="ansi-blue-fg">(TEXT, xf_tts)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     data<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>     <span class="ansi-green-fg">for</span> sub_text <span class="ansi-green-fg">in</span> cut_string<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">,</span> Lmax<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg">         </span>response <span class="ansi-blue-fg">=</span> short_tts<span class="ansi-blue-fg">(</span>sub_text<span class="ansi-blue-fg">,</span> xf_tts<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>         data<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>response<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-red-fg">#         data+=short_tts(sub_text, xf_tts)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-7-64c26b117a6b&gt;</span> in <span class="ansi-cyan-fg">short_tts</span><span class="ansi-blue-fg">(TEXT, xf_tts)</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span><span class="ansi-blue-fg">(</span>response_head <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#34;text/plain&#34;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     11</span>         err_msg<span class="ansi-blue-fg">=</span>json<span class="ansi-blue-fg">.</span>loads<span class="ansi-blue-fg">(</span>response<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>decode<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;utf8&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 12</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> UserWarning<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;讯飞WebAPI错误: {}&#34;</span><span class="ansi-blue-fg">.</span>format<span class="ansi-blue-fg">(</span>err_msg<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#34;desc&#34;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span> <span class="ansi-red-fg">#     return response.read()</span>
+<span class="ansi-green-intense-fg ansi-bold">     14</span>     <span class="ansi-green-fg">return</span> response
+
+<span class="ansi-red-fg">UserWarning</span>: 讯飞WebAPI错误: illegal parameter|illegal text length</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
     </div>
   </div>
 </body>

@@ -35,6 +35,7 @@ import string
 import sys
 import threading
 import urllib.parse
+import json
 
 import appdirs
 import requests

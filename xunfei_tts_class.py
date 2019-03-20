@@ -34,7 +34,7 @@ class Speech:
     
     def __init__(self, 
                  api,
-                 voice_name='x_yifeng', 
+                 voice_name='aisjiuxu', 
                  audio_type="mp3", #音频编码，raw(生成wav)或lame(生成mp3)
                  speed="60",
                  volume="100",
@@ -113,7 +113,7 @@ class Speech:
         self.construct_urlencode_utf8(text)
         # 发送HTTP POST请求
         req = urllib.request.Request(
-            api["url"], 
+            self.api["url"], 
             data=self.body_utf8, 
             headers=self.header)
         response = urllib.request.urlopen(req)
@@ -142,24 +142,4 @@ class Speech:
         combined.export(file, 
                         format="mp3",
                         codec="libmp3lame")
-
-
-# In[9]:
-
-
-with open('API_setup.txt') as json_file:  
-    api = json.load(json_file)
-a=Speech(api)
-
-
-# In[10]:
-
-
-a.play("你好")
-
-
-# In[11]:
-
-
-a.save("你好","test.mp3")
 
