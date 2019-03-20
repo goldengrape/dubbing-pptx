@@ -11809,7 +11809,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -11823,7 +11823,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">cut_string</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">Lmax</span><span class="p">):</span>
@@ -11839,7 +11839,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -11904,7 +11904,7 @@ div#notebook {
     <span class="n">Param</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;auf&quot;</span><span class="p">:</span> <span class="s2">&quot;audio/L16;rate=16000&quot;</span><span class="p">,</span>    <span class="c1">#音频采样率</span>
         <span class="s2">&quot;aue&quot;</span><span class="p">:</span> <span class="s2">&quot;lame&quot;</span><span class="p">,</span>    <span class="c1">#音频编码，raw(生成wav)或lame(生成mp3)</span>
-        <span class="s2">&quot;voice_name&quot;</span><span class="p">:</span> <span class="s2">&quot;aisjiuxu&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice_name&quot;</span><span class="p">:</span> <span class="s2">&quot;x_yifeng&quot;</span><span class="p">,</span>
         <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="s2">&quot;75&quot;</span><span class="p">,</span>    <span class="c1">#语速[0,100]</span>
         <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="s2">&quot;77&quot;</span><span class="p">,</span>    <span class="c1">#音量[0,100]</span>
         <span class="s2">&quot;pitch&quot;</span><span class="p">:</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>    <span class="c1">#音高[0,100]</span>
@@ -12075,6 +12075,122 @@ div#notebook {
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-9-607e4527a5f2&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">     18</span>     &#39;&#39;&#39;
+<span class="ansi-green-intense-fg ansi-bold">     19</span>     xf_tts<span class="ansi-blue-fg">=</span>init_xf_tts<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 20</span><span class="ansi-red-fg">     </span>xf_save_tts<span class="ansi-blue-fg">(</span>xf_tts<span class="ansi-blue-fg">,</span> text<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;tts_test.mp3&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-8-265a1ff4c71b&gt;</span> in <span class="ansi-cyan-fg">xf_save_tts</span><span class="ansi-blue-fg">(xf_tts, TEXT, filename)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> 
+<span class="ansi-green-intense-fg ansi-bold">     10</span> <span class="ansi-green-fg">def</span> xf_save_tts<span class="ansi-blue-fg">(</span>xf_tts<span class="ansi-blue-fg">,</span> TEXT<span class="ansi-blue-fg">,</span> filename<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">     </span>data<span class="ansi-blue-fg">=</span>long_tts<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">,</span> xf_tts<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>     temp_filename_list<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#34;tts_tmp_{}.mp3&#34;</span><span class="ansi-blue-fg">.</span>format<span class="ansi-blue-fg">(</span>index<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> index <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>len<span class="ansi-blue-fg">(</span>data<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span> 
+
+<span class="ansi-green-fg">&lt;ipython-input-8-265a1ff4c71b&gt;</span> in <span class="ansi-cyan-fg">long_tts</span><span class="ansi-blue-fg">(TEXT, xf_tts)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     data<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>     <span class="ansi-green-fg">for</span> sub_text <span class="ansi-green-fg">in</span> cut_string<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">,</span> Lmax<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg">         </span>response <span class="ansi-blue-fg">=</span> short_tts<span class="ansi-blue-fg">(</span>sub_text<span class="ansi-blue-fg">,</span> xf_tts<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>         data<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>response<span class="ansi-blue-fg">.</span>read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-red-fg">#         data+=short_tts(sub_text, xf_tts)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-7-0dc70a22e4a2&gt;</span> in <span class="ansi-cyan-fg">short_tts</span><span class="ansi-blue-fg">(TEXT, xf_tts)</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>         data<span class="ansi-blue-fg">=</span>construct_urlencode_utf8<span class="ansi-blue-fg">(</span>TEXT<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span>         headers=construct_header(api, construct_base64_str(Param)))
+<span class="ansi-green-fg">----&gt; 8</span><span class="ansi-red-fg">     </span>response <span class="ansi-blue-fg">=</span> urllib<span class="ansi-blue-fg">.</span>request<span class="ansi-blue-fg">.</span>urlopen<span class="ansi-blue-fg">(</span>req<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span>     response_head <span class="ansi-blue-fg">=</span> response<span class="ansi-blue-fg">.</span>headers<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;Content-Type&#39;</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span><span class="ansi-blue-fg">(</span>response_head <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#34;text/plain&#34;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/urllib/request.py</span> in <span class="ansi-cyan-fg">urlopen</span><span class="ansi-blue-fg">(url, data, timeout, cafile, capath, cadefault, context)</span>
+<span class="ansi-green-intense-fg ansi-bold">    161</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    162</span>         opener <span class="ansi-blue-fg">=</span> _opener
+<span class="ansi-green-fg">--&gt; 163</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> opener<span class="ansi-blue-fg">.</span>open<span class="ansi-blue-fg">(</span>url<span class="ansi-blue-fg">,</span> data<span class="ansi-blue-fg">,</span> timeout<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    164</span> 
+<span class="ansi-green-intense-fg ansi-bold">    165</span> <span class="ansi-green-fg">def</span> install_opener<span class="ansi-blue-fg">(</span>opener<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/urllib/request.py</span> in <span class="ansi-cyan-fg">open</span><span class="ansi-blue-fg">(self, fullurl, data, timeout)</span>
+<span class="ansi-green-intense-fg ansi-bold">    464</span>             req <span class="ansi-blue-fg">=</span> meth<span class="ansi-blue-fg">(</span>req<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    465</span> 
+<span class="ansi-green-fg">--&gt; 466</span><span class="ansi-red-fg">         </span>response <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_open<span class="ansi-blue-fg">(</span>req<span class="ansi-blue-fg">,</span> data<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    467</span> 
+<span class="ansi-green-intense-fg ansi-bold">    468</span>         <span class="ansi-red-fg"># post-process response</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/urllib/request.py</span> in <span class="ansi-cyan-fg">_open</span><span class="ansi-blue-fg">(self, req, data)</span>
+<span class="ansi-green-intense-fg ansi-bold">    482</span>         protocol <span class="ansi-blue-fg">=</span> req<span class="ansi-blue-fg">.</span>type
+<span class="ansi-green-intense-fg ansi-bold">    483</span>         result = self._call_chain(self.handle_open, protocol, protocol +
+<span class="ansi-green-fg">--&gt; 484</span><span class="ansi-red-fg">                                   &#39;_open&#39;, req)
+</span><span class="ansi-green-intense-fg ansi-bold">    485</span>         <span class="ansi-green-fg">if</span> result<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    486</span>             <span class="ansi-green-fg">return</span> result
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/urllib/request.py</span> in <span class="ansi-cyan-fg">_call_chain</span><span class="ansi-blue-fg">(self, chain, kind, meth_name, *args)</span>
+<span class="ansi-green-intense-fg ansi-bold">    442</span>         <span class="ansi-green-fg">for</span> handler <span class="ansi-green-fg">in</span> handlers<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    443</span>             func <span class="ansi-blue-fg">=</span> getattr<span class="ansi-blue-fg">(</span>handler<span class="ansi-blue-fg">,</span> meth_name<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 444</span><span class="ansi-red-fg">             </span>result <span class="ansi-blue-fg">=</span> func<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    445</span>             <span class="ansi-green-fg">if</span> result <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    446</span>                 <span class="ansi-green-fg">return</span> result
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/urllib/request.py</span> in <span class="ansi-cyan-fg">http_open</span><span class="ansi-blue-fg">(self, req)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1280</span> 
+<span class="ansi-green-intense-fg ansi-bold">   1281</span>     <span class="ansi-green-fg">def</span> http_open<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> req<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 1282</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>do_open<span class="ansi-blue-fg">(</span>http<span class="ansi-blue-fg">.</span>client<span class="ansi-blue-fg">.</span>HTTPConnection<span class="ansi-blue-fg">,</span> req<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1283</span> 
+<span class="ansi-green-intense-fg ansi-bold">   1284</span>     http_request <span class="ansi-blue-fg">=</span> AbstractHTTPHandler<span class="ansi-blue-fg">.</span>do_request_
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/urllib/request.py</span> in <span class="ansi-cyan-fg">do_open</span><span class="ansi-blue-fg">(self, http_class, req, **http_conn_args)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1255</span>             <span class="ansi-green-fg">except</span> OSError <span class="ansi-green-fg">as</span> err<span class="ansi-blue-fg">:</span> <span class="ansi-red-fg"># timeout error</span>
+<span class="ansi-green-intense-fg ansi-bold">   1256</span>                 <span class="ansi-green-fg">raise</span> URLError<span class="ansi-blue-fg">(</span>err<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">-&gt; 1257</span><span class="ansi-red-fg">             </span>r <span class="ansi-blue-fg">=</span> h<span class="ansi-blue-fg">.</span>getresponse<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1258</span>         <span class="ansi-green-fg">except</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   1259</span>             h<span class="ansi-blue-fg">.</span>close<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/http/client.py</span> in <span class="ansi-cyan-fg">getresponse</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1196</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   1197</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 1198</span><span class="ansi-red-fg">                 </span>response<span class="ansi-blue-fg">.</span>begin<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1199</span>             <span class="ansi-green-fg">except</span> ConnectionError<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   1200</span>                 self<span class="ansi-blue-fg">.</span>close<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/http/client.py</span> in <span class="ansi-cyan-fg">begin</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    295</span>         <span class="ansi-red-fg"># read until we get a non-100 response</span>
+<span class="ansi-green-intense-fg ansi-bold">    296</span>         <span class="ansi-green-fg">while</span> <span class="ansi-green-fg">True</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 297</span><span class="ansi-red-fg">             </span>version<span class="ansi-blue-fg">,</span> status<span class="ansi-blue-fg">,</span> reason <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_read_status<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    298</span>             <span class="ansi-green-fg">if</span> status <span class="ansi-blue-fg">!=</span> CONTINUE<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    299</span>                 <span class="ansi-green-fg">break</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/http/client.py</span> in <span class="ansi-cyan-fg">_read_status</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    256</span> 
+<span class="ansi-green-intense-fg ansi-bold">    257</span>     <span class="ansi-green-fg">def</span> _read_status<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 258</span><span class="ansi-red-fg">         </span>line <span class="ansi-blue-fg">=</span> str<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>fp<span class="ansi-blue-fg">.</span>readline<span class="ansi-blue-fg">(</span>_MAXLINE <span class="ansi-blue-fg">+</span> <span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;iso-8859-1&#34;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    259</span>         <span class="ansi-green-fg">if</span> len<span class="ansi-blue-fg">(</span>line<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">&gt;</span> _MAXLINE<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    260</span>             <span class="ansi-green-fg">raise</span> LineTooLong<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;status line&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/socket.py</span> in <span class="ansi-cyan-fg">readinto</span><span class="ansi-blue-fg">(self, b)</span>
+<span class="ansi-green-intense-fg ansi-bold">    574</span>         <span class="ansi-green-fg">while</span> <span class="ansi-green-fg">True</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    575</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 576</span><span class="ansi-red-fg">                 </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_sock<span class="ansi-blue-fg">.</span>recv_into<span class="ansi-blue-fg">(</span>b<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    577</span>             <span class="ansi-green-fg">except</span> timeout<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    578</span>                 self<span class="ansi-blue-fg">.</span>_timeout_occurred <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+</div>
+</div>
+
 </div>
 </div>
 

@@ -11827,6 +11827,8 @@ div#notebook {
 <span class="kn">import</span> <span class="nn">web_cache</span>
 
 <span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">pydub</span> <span class="k">import</span> <span class="n">AudioSegment</span>
+<span class="kn">from</span> <span class="nn">pydub.playback</span> <span class="k">import</span> <span class="n">play</span>
 </pre></div>
 
 </div>
@@ -11858,7 +11860,18 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>暂时不太理解这个PreloaderThread</p>
+
+<pre><code>$ google_speech -o a.mp3 -l en 'hey'
+$ ffprobe -hide_banner a.mp3 
+Input #0, mp3, from 'a.mp3':
+  Duration: 00:00:00.77, start: 0.000000, bitrate: 32 kb/s
+    Stream #0:0: Audio: mp3, 24000 Hz, mono, fltp, 32 kb/s
+$ google_speech -o b.mp3 -l zh-cn '你好'
+$ ffprobe -hide_banner b.mp3 
+Input #0, mp3, from 'b.mp3':
+  Duration: 00:00:00.94, start: 0.000000, bitrate: 32 kb/s
+    Stream #0:0: Audio: mp3, 22050 Hz, mono, fltp, 32 kb/</code></pre>
+<p>对于google translate TTS返回的mp3， 居然中文和英文是两种不同的frame_rate，所以不能直接混合。</p>
 
 </div>
 </div>
@@ -12009,7 +12022,7 @@ div#notebook {
     <span class="k">def</span> <span class="nf">savef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write audio data into a file object. &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">(</span> <span class="p">)</span>
+<span class="c1">#             segment.play( )</span>
             <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">())</span>
 </pre></div>
 

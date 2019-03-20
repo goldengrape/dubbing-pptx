@@ -41,6 +41,8 @@ import requests
 import web_cache
 
 from io import BytesIO
+from pydub import AudioSegment
+from pydub.playback import play
 
 
 # In[3]:
@@ -56,7 +58,19 @@ SUPPORTED_LANGUAGES = ("af", "ar", "bn", "bs", "ca", "cs", "cy", "da", "de", "el
 PRELOADER_THREAD_COUNT = 1
 
 
-# 暂时不太理解这个PreloaderThread
+# ```
+# $ google_speech -o a.mp3 -l en 'hey'
+# $ ffprobe -hide_banner a.mp3 
+# Input #0, mp3, from 'a.mp3':
+#   Duration: 00:00:00.77, start: 0.000000, bitrate: 32 kb/s
+#     Stream #0:0: Audio: mp3, 24000 Hz, mono, fltp, 32 kb/s
+# $ google_speech -o b.mp3 -l zh-cn '你好'
+# $ ffprobe -hide_banner b.mp3 
+# Input #0, mp3, from 'b.mp3':
+#   Duration: 00:00:00.94, start: 0.000000, bitrate: 32 kb/s
+#     Stream #0:0: Audio: mp3, 22050 Hz, mono, fltp, 32 kb/
+# ```
+# 对于google translate TTS返回的mp3， 居然中文和英文是两种不同的frame_rate，所以不能直接混合。
 
 # In[4]:
 
@@ -188,7 +202,7 @@ class Speech:
     def savef(self, file):
         """ Write audio data into a file object. """
         for segment in self:
-            segment.play( )
+#             segment.play( )
             file.write(segment.getAudioData())
 
 
