@@ -16,7 +16,7 @@ if platform.system()=="Darwin":
 from pptx import Presentation
 from pptx.util import Inches
 from xunfei_tts import init_xf_tts, xf_save_tts
-from google_speech import Speech
+from google_tts import Speech
 
 
 # In[2]:
@@ -78,7 +78,7 @@ def save_tts(ve, TEXT, filename, tts_engine):
         xf_save_tts(ve, TEXT, filename)
     elif tts_engine=="google":
         filename=filename+".mp3"
-        speech = Speech(TEXT, "zh-cn")
+        speech = Speech(TEXT, "zh-cn","en")
         speech.save(filename)
     return filename
 
@@ -115,6 +115,7 @@ def insert_voice(voice_filename, slide):
 
 def clean_temp(voice_filename):
     os.remove(voice_filename)
+    pass
     
 
 
@@ -155,7 +156,7 @@ def interpret_opt(opt):
         output_filename=opt[2]
         tts_engine_flag = opt[3]
         if opt[3]=="--online":
-            tts_engine_flag="xunfei"
+            tts_engine_flag="google"
 #         else:
 #             tts_engine_flag=platform.system()
         
