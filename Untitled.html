@@ -11773,7 +11773,7 @@ div#notebook {
 
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">google_tts</span> <span class="k">import</span> <span class="n">Speech</span> <span class="k">as</span> <span class="n">neo_Speech</span>
@@ -11783,67 +11783,20 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">pydub.playback</span> <span class="k">import</span> <span class="n">play</span>
 
 
-<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;这一句话This sentence中既有中文又有English，&quot;</span> 
+<span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">移除sox支持, 使之成为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. (已经完成)</span>
+<span class="s1">&#39;&#39;&#39;</span>
 <span class="c1"># This sentence has both Chinese and English.</span>
 
 <span class="n">lang</span> <span class="o">=</span> <span class="s2">&quot;zh-cn&quot;</span>
 <span class="n">speech</span> <span class="o">=</span> <span class="n">neo_Speech</span><span class="p">(</span><span class="n">text</span><span class="p">,</span><span class="n">lang</span><span class="p">)</span>
-<span class="n">speech</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;test.mp3&quot;</span><span class="p">)</span>
+<span class="c1"># speech.play()</span>
+<span class="c1"># speech.save(&quot;test.mp3&quot;)</span>
+<span class="n">f</span><span class="o">=</span><span class="n">BytesIO</span><span class="p">()</span>
+<span class="n">speech</span><span class="o">.</span><span class="n">savef</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
 
 </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">CouldntEncodeError</span>                        Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-1-2fec3839ee9b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">     11</span> lang <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">&#34;zh-cn&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span> speech <span class="ansi-blue-fg">=</span> neo_Speech<span class="ansi-blue-fg">(</span>text<span class="ansi-blue-fg">,</span>lang<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 13</span><span class="ansi-red-fg"> </span>speech<span class="ansi-blue-fg">.</span>save<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;test.mp3&#34;</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/Volumes/macTF/github/dubbing-pptx/google_tts.py</span> in <span class="ansi-cyan-fg">save</span><span class="ansi-blue-fg">(self, path)</span>
-<span class="ansi-green-intense-fg ansi-bold">    198</span>         <span class="ansi-blue-fg">&#34;&#34;&#34; Save audio data to an MP3 file. &#34;&#34;&#34;</span>
-<span class="ansi-green-intense-fg ansi-bold">    199</span>         <span class="ansi-green-fg">with</span> open<span class="ansi-blue-fg">(</span>path<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;wb&#34;</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> f<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 200</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>savef<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    201</span> 
-<span class="ansi-green-intense-fg ansi-bold">    202</span>     <span class="ansi-green-fg">def</span> savef<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> file<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/Volumes/macTF/github/dubbing-pptx/google_tts.py</span> in <span class="ansi-cyan-fg">savef</span><span class="ansi-blue-fg">(self, file)</span>
-<span class="ansi-green-intense-fg ansi-bold">    207</span>         combined.export(file, 
-<span class="ansi-green-intense-fg ansi-bold">    208</span>                         format<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;mp3&#34;</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">--&gt; 209</span><span class="ansi-red-fg">                         codec=&#34;libmp3lame&#34;)
-</span><span class="ansi-green-intense-fg ansi-bold">    210</span>     <span class="ansi-green-fg">def</span> test<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    211</span>         combined <span class="ansi-blue-fg">=</span> AudioSegment<span class="ansi-blue-fg">.</span>empty<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/site-packages/pydub/audio_segment.py</span> in <span class="ansi-cyan-fg">export</span><span class="ansi-blue-fg">(self, out_f, format, codec, bitrate, parameters, tags, id3v2_version, cover)</span>
-<span class="ansi-green-intense-fg ansi-bold">    875</span>             raise CouldntEncodeError(
-<span class="ansi-green-intense-fg ansi-bold">    876</span>                 &#34;Encoding failed. ffmpeg/avlib returned error code: {0}\n\nCommand:{1}\n\nOutput from ffmpeg/avlib:\n\n{2}&#34;.format(
-<span class="ansi-green-fg">--&gt; 877</span><span class="ansi-red-fg">                     p.returncode, conversion_command, p_err))
-</span><span class="ansi-green-intense-fg ansi-bold">    878</span> 
-<span class="ansi-green-intense-fg ansi-bold">    879</span>         output<span class="ansi-blue-fg">.</span>seek<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">CouldntEncodeError</span>: Encoding failed. ffmpeg/avlib returned error code: 1
-
-Command:[&#39;ffmpeg&#39;, &#39;-y&#39;, &#39;-f&#39;, &#39;wav&#39;, &#39;-i&#39;, &#39;/var/folders/bh/s7cgpwh54k52w067fqldlvy40000gp/T/tmp42jju4o8&#39;, &#39;-acodec&#39;, &#39;libmp3lame&#39;, &#39;-f&#39;, &#39;mp3&#39;, &#39;/var/folders/bh/s7cgpwh54k52w067fqldlvy40000gp/T/tmpr_bofhmh&#39;]
-
-Output from ffmpeg/avlib:
-
-b&#34;ffmpeg version 4.0.1 Copyright (c) 2000-2018 the FFmpeg developers\n  built with Apple LLVM version 6.1.0 (clang-602.0.53) (based on LLVM 3.6.0svn)\n  configuration: --prefix=/Users/goldengrape/anaconda3/envs/blog --disable-doc --enable-shared --enable-static --extra-cflags=&#39;-Wall -g -m64 -pipe -O3 -march=x86-64 -fPIC&#39; --extra-cxxflags=&#39;-Wall -g -m64 -pipe -O3 -march=x86-64 -fPIC&#39; --extra-libs=&#39;-lpthread -lm -lz&#39; --enable-zlib --enable-pic --enable-pthreads --enable-gpl --enable-version3 --enable-hardcoded-tables --enable-avresample --enable-libfreetype --enable-gnutls --enable-libx264\n  libavutil      56. 14.100 / 56. 14.100\n  libavcodec     58. 18.100 / 58. 18.100\n  libavformat    58. 12.100 / 58. 12.100\n  libavdevice    58.  3.100 / 58.  3.100\n  libavfilter     7. 16.100 /  7. 16.100\n  libavresample   4.  0.  0 /  4.  0.  0\n  libswscale      5.  1.100 /  5.  1.100\n  libswresample   3.  1.100 /  3.  1.100\n  libpostproc    55.  1.100 / 55.  1.100\nGuessed Channel Layout for Input Stream #0.0 : mono\nInput #0, wav, from &#39;/var/folders/bh/s7cgpwh54k52w067fqldlvy40000gp/T/tmp42jju4o8&#39;:\n  Duration: 00:00:07.15, bitrate: 384 kb/s\n    Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, mono, s16, 384 kb/s\nUnknown encoder &#39;libmp3lame&#39;\n&#34;</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -11864,6 +11817,56 @@ b&#34;ffmpeg version 4.0.1 Copyright (c) 2000-2018 the FFmpeg developers\n  buil
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">play</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AttributeError</span>                            Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-5-8be0014fbc85&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>play<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">.</span>getvalue<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/site-packages/pydub/playback.py</span> in <span class="ansi-cyan-fg">play</span><span class="ansi-blue-fg">(audio_segment)</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span> <span class="ansi-green-fg">def</span> play<span class="ansi-blue-fg">(</span>audio_segment<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     52</span>     <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 53</span><span class="ansi-red-fg">         </span>playback <span class="ansi-blue-fg">=</span> _play_with_simpleaudio<span class="ansi-blue-fg">(</span>audio_segment<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     54</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     55</span>             playback<span class="ansi-blue-fg">.</span>wait_done<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/blog/lib/python3.5/site-packages/pydub/playback.py</span> in <span class="ansi-cyan-fg">_play_with_simpleaudio</span><span class="ansi-blue-fg">(seg)</span>
+<span class="ansi-green-intense-fg ansi-bold">     42</span>     <span class="ansi-green-fg">import</span> simpleaudio
+<span class="ansi-green-intense-fg ansi-bold">     43</span>     return simpleaudio.play_buffer(
+<span class="ansi-green-fg">---&gt; 44</span><span class="ansi-red-fg">         </span>seg<span class="ansi-blue-fg">.</span>raw_data<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>         num_channels<span class="ansi-blue-fg">=</span>seg<span class="ansi-blue-fg">.</span>channels<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     46</span>         bytes_per_sample<span class="ansi-blue-fg">=</span>seg<span class="ansi-blue-fg">.</span>sample_width<span class="ansi-blue-fg">,</span>
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;bytes&#39; object has no attribute &#39;raw_data&#39;</pre>
+</div>
+</div>
+
+</div>
+</div>
+
 </div>
     </div>
   </div>

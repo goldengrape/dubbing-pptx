@@ -11781,8 +11781,8 @@ div#notebook {
 <ul>
 <li>在中英文混合的语句中, 中文要读中文, 英文要读英文. 因为是调用了Google translate的非官方API, 所以Pubmed居然会被读成“帕布莫德”这样的可怕中文名. (已经完成)</li>
 <li>支持BytesIO的读写, (已经完成)</li>
-<li>并在内存内完成音频的拼接</li>
-<li>移除sox支持, 使之称为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. </li>
+<li>并在内存内完成音频的拼接 (已经完成)</li>
+<li>移除sox支持, 使之称为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. (已经完成)</li>
 </ul>
 
 </div>
@@ -11872,6 +11872,7 @@ Input #0, mp3, from 'b.mp3':
   Duration: 00:00:00.94, start: 0.000000, bitrate: 32 kb/s
     Stream #0:0: Audio: mp3, 22050 Hz, mono, fltp, 32 kb/</code></pre>
 <p>对于google translate TTS返回的mp3， 居然中文和英文是两种不同的frame_rate，所以不能直接混合。</p>
+<p>因此使用了pydub将音频进行了混合</p>
 
 </div>
 </div>
@@ -11992,7 +11993,7 @@ Input #0, mp3, from 'b.mp3':
         <span class="k">return</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">CLEAN_MULTIPLE_SPACES_REGEX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span>
                                                      <span class="n">dirty_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sox_effects</span><span class="o">=</span><span class="p">()):</span>
+    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Play a speech. &quot;&quot;&quot;</span>
 
         <span class="c1"># Build the segments</span>
@@ -12007,7 +12008,7 @@ Input #0, mp3, from 'b.mp3':
 
         <span class="c1"># play segments</span>
         <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
-            <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">sox_effects</span><span class="p">)</span>
+            <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 
 
         <span class="c1"># destroy preloader threads</span>
@@ -12027,13 +12028,6 @@ Input #0, mp3, from 'b.mp3':
         <span class="n">combined</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> 
                         <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mp3&quot;</span><span class="p">,</span>
                         <span class="n">codec</span><span class="o">=</span><span class="s2">&quot;libmp3lame&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">combined</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">combined</span> <span class="o">+=</span> <span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
-        <span class="n">play</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>         
-<span class="c1">#             segment.play( )</span>
-<span class="c1">#         file.write(combined)</span>
 </pre></div>
 
 </div>
@@ -12060,7 +12054,8 @@ Input #0, mp3, from 'b.mp3':
     <span class="sd">&quot;&quot;&quot; Text segment to be read. &quot;&quot;&quot;</span>
 
     <span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://translate.google.com/translate_tts&quot;</span>
-
+    <span class="n">playback_speed</span><span class="o">=</span><span class="mf">1.2</span>
+    
     <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment_count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -12102,6 +12097,32 @@ Input #0, mp3, from 'b.mp3':
         <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">real_url</span><span class="p">)</span>
         <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
         <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
+        
+    <span class="k">def</span> <span class="nf">trim_silence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sound</span><span class="p">):</span>    
+        <span class="k">def</span> <span class="nf">detect_leading_silence</span><span class="p">(</span><span class="n">sound</span><span class="p">,</span> <span class="n">silence_threshold</span><span class="o">=-</span><span class="mf">50.0</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            sound is a pydub.AudioSegment</span>
+<span class="sd">            silence_threshold in dB</span>
+<span class="sd">            chunk_size in ms</span>
+
+<span class="sd">            iterate over chunks until you find the first one with sound</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">trim_ms</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># ms</span>
+
+            <span class="k">assert</span> <span class="n">chunk_size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="c1"># to avoid infinite loop</span>
+            <span class="k">while</span> <span class="n">sound</span><span class="p">[</span><span class="n">trim_ms</span><span class="p">:</span><span class="n">trim_ms</span><span class="o">+</span><span class="n">chunk_size</span><span class="p">]</span><span class="o">.</span><span class="n">dBFS</span> <span class="o">&lt;</span> <span class="n">silence_threshold</span> <span class="ow">and</span> <span class="n">trim_ms</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sound</span><span class="p">):</span>
+                <span class="n">trim_ms</span> <span class="o">+=</span> <span class="n">chunk_size</span>
+
+            <span class="k">return</span> <span class="n">trim_ms</span>
+
+        <span class="n">start_trim</span> <span class="o">=</span> <span class="n">detect_leading_silence</span><span class="p">(</span><span class="n">sound</span><span class="p">)</span>
+        <span class="n">end_trim</span> <span class="o">=</span> <span class="n">detect_leading_silence</span><span class="p">(</span><span class="n">sound</span><span class="o">.</span><span class="n">reverse</span><span class="p">())</span>
+
+        <span class="n">duration</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sound</span><span class="p">)</span>    
+        <span class="n">trimmed_sound</span> <span class="o">=</span> <span class="n">sound</span><span class="p">[</span><span class="n">start_trim</span><span class="p">:</span><span class="n">duration</span><span class="o">-</span><span class="n">end_trim</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">trimmed_sound</span>
+
 
     <span class="k">def</span> <span class="nf">getAudioData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Fetch the audio data. &quot;&quot;&quot;</span>
@@ -12116,27 +12137,21 @@ Input #0, mp3, from 'b.mp3':
                 <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">real_url</span><span class="p">)</span>
                 <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
                 <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
-        <span class="k">return</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">from_mp3</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">audio_data</span><span class="p">))</span>
+        <span class="c1"># 注意！由于中文与英文的音频采样率不同， 分别是22050Hz和24000Hz，</span>
+        <span class="c1"># 所以如果直接使用二进制方式，虽然可以朗读， 但无法进行文件的连续写入</span>
+        <span class="c1"># 因此在此处使用Pydub中的AudioSegment，使其可以方便处理</span>
+        <span class="n">voice</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">from_mp3</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">audio_data</span><span class="p">))</span>
+<span class="c1">#         voice = self.trim_silence(voice)</span>
+        <span class="n">voice</span> <span class="o">=</span> <span class="n">voice</span><span class="o">.</span><span class="n">speedup</span><span class="p">(</span><span class="n">playback_speed</span><span class="o">=</span><span class="vm">__class__</span><span class="o">.</span><span class="n">playback_speed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">voice</span>
         
 
-    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sox_effects</span><span class="o">=</span><span class="p">()):</span>
+    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Play the segment. &quot;&quot;&quot;</span>
         <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Playing speech segment (</span><span class="si">%s</span><span class="s2">): &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
         <span class="n">play</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
-<span class="c1">#         cmd = [&quot;sox&quot;, &quot;-q&quot;, &quot;-t&quot;, &quot;mp3&quot;, &quot;-&quot;]</span>
-<span class="c1">#         if sys.platform.startswith(&quot;win32&quot;):</span>
-<span class="c1">#             cmd.extend((&quot;-t&quot;, &quot;waveaudio&quot;))</span>
-<span class="c1">#         cmd.extend((&quot;-d&quot;, &quot;trim&quot;, &quot;0.1&quot;, &quot;reverse&quot;, &quot;trim&quot;, &quot;0.07&quot;, &quot;reverse&quot;))  # &quot;trim&quot;, &quot;0.25&quot;, &quot;-0.1&quot;</span>
-<span class="c1">#         cmd.extend(sox_effects)</span>
-<span class="c1">#         logging.getLogger().debug(&quot;Start player process&quot;)</span>
-<span class="c1">#         p = subprocess.Popen(cmd,</span>
-<span class="c1">#                              stdin=subprocess.PIPE,</span>
-<span class="c1">#                              stdout=subprocess.DEVNULL)</span>
-<span class="c1">#         p.communicate(input=audio_data)</span>
-<span class="c1">#         if p.returncode != 0:</span>
-<span class="c1">#             raise RuntimeError()</span>
-<span class="c1">#         logging.getLogger().debug(&quot;Done playing&quot;)</span>
+
     
     <span class="k">def</span> <span class="nf">buildUrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_friendly</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

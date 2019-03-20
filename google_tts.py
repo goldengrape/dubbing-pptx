@@ -8,8 +8,8 @@
 # 在如下几个方面进行改变:
 # * 在中英文混合的语句中, 中文要读中文, 英文要读英文. 因为是调用了Google translate的非官方API, 所以Pubmed居然会被读成“帕布莫德”这样的可怕中文名. (已经完成)
 # * 支持BytesIO的读写, (已经完成)
-# * 并在内存内完成音频的拼接
-# * 移除sox支持, 使之称为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. 
+# * 并在内存内完成音频的拼接 (已经完成)
+# * 移除sox支持, 使之称为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. (已经完成)
 
 # In[1]:
 
@@ -71,6 +71,8 @@ PRELOADER_THREAD_COUNT = 1
 #     Stream #0:0: Audio: mp3, 22050 Hz, mono, fltp, 32 kb/
 # ```
 # 对于google translate TTS返回的mp3， 居然中文和英文是两种不同的frame_rate，所以不能直接混合。
+# 
+# 因此使用了pydub将音频进行了混合
 
 # In[4]:
 
@@ -172,7 +174,7 @@ class Speech:
         return __class__.CLEAN_MULTIPLE_SPACES_REGEX.sub(" ",
                                                      dirty_string.replace("\n\n", "\n").replace("\t", " ").strip())
 
-    def play(self, sox_effects=()):
+    def play(self):
         """ Play a speech. """
 
         # Build the segments
@@ -187,7 +189,7 @@ class Speech:
 
         # play segments
         for segment in segments:
-            segment.play(sox_effects)
+            segment.play()
 
 
         # destroy preloader threads
@@ -207,13 +209,6 @@ class Speech:
         combined.export(file, 
                         format="mp3",
                         codec="libmp3lame")
-    def test(self):
-        combined = AudioSegment.empty()
-        for segment in self:
-            combined += segment.getAudioData()
-        play(combined)         
-#             segment.play( )
-#         file.write(combined)
 
 
 # 朗读
@@ -226,7 +221,8 @@ class SpeechSegment:
     """ Text segment to be read. """
 
     BASE_URL = "https://translate.google.com/translate_tts"
-
+    playback_speed=1.2
+    
     session = requests.Session()
 
     def __init__(self, text, lang, segment_num, segment_count=None):
@@ -268,6 +264,32 @@ class SpeechSegment:
         audio_data = self.download(real_url)
         assert(audio_data)
         __class__.cache[cache_url] = audio_data
+        
+    def trim_silence(self, sound):    
+        def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=5):
+            '''
+            sound is a pydub.AudioSegment
+            silence_threshold in dB
+            chunk_size in ms
+
+            iterate over chunks until you find the first one with sound
+            '''
+            trim_ms = 0 # ms
+
+            assert chunk_size > 0 # to avoid infinite loop
+            while sound[trim_ms:trim_ms+chunk_size].dBFS < silence_threshold and trim_ms < len(sound):
+                trim_ms += chunk_size
+
+            return trim_ms
+
+        start_trim = detect_leading_silence(sound)
+        end_trim = detect_leading_silence(sound.reverse())
+
+        duration = len(sound)    
+        trimmed_sound = sound[start_trim:duration-end_trim]
+        
+        return trimmed_sound
+
 
     def getAudioData(self):
         """ Fetch the audio data. """
@@ -282,27 +304,21 @@ class SpeechSegment:
                 audio_data = self.download(real_url)
                 assert(audio_data)
                 __class__.cache[cache_url] = audio_data
-        return AudioSegment.from_mp3(BytesIO(audio_data))
+        # 注意！由于中文与英文的音频采样率不同， 分别是22050Hz和24000Hz，
+        # 所以如果直接使用二进制方式，虽然可以朗读， 但无法进行文件的连续写入
+        # 因此在此处使用Pydub中的AudioSegment，使其可以方便处理
+        voice = AudioSegment.from_mp3(BytesIO(audio_data))
+#         voice = self.trim_silence(voice)
+        voice = voice.speedup(playback_speed=__class__.playback_speed)
+        return voice
         
 
-    def play(self, sox_effects=()):
+    def play(self):
         """ Play the segment. """
         audio_data = self.getAudioData()
         logging.getLogger().info("Playing speech segment (%s): '%s'" % (self.lang, self))
         play(audio_data)
-#         cmd = ["sox", "-q", "-t", "mp3", "-"]
-#         if sys.platform.startswith("win32"):
-#             cmd.extend(("-t", "waveaudio"))
-#         cmd.extend(("-d", "trim", "0.1", "reverse", "trim", "0.07", "reverse"))  # "trim", "0.25", "-0.1"
-#         cmd.extend(sox_effects)
-#         logging.getLogger().debug("Start player process")
-#         p = subprocess.Popen(cmd,
-#                              stdin=subprocess.PIPE,
-#                              stdout=subprocess.DEVNULL)
-#         p.communicate(input=audio_data)
-#         if p.returncode != 0:
-#             raise RuntimeError()
-#         logging.getLogger().debug("Done playing")
+
     
     def buildUrl(self, cache_friendly=False):
         """
