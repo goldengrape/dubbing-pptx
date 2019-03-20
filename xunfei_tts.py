@@ -15,6 +15,9 @@ import json
 import subprocess
 import os
 
+from io import BytesIO
+from pydub import AudioSegment
+
 
 # ## 分割长字符串
 # 
@@ -68,8 +71,8 @@ def init_xf_tts():
         "auf": "audio/L16;rate=16000",    #音频采样率
         "aue": "lame",    #音频编码，raw(生成wav)或lame(生成mp3)
         "voice_name": "x_yifeng",
-        "speed": "75",    #语速[0,100]
-        "volume": "77",    #音量[0,100]
+        "speed": "60",    #语速[0,100]
+        "volume": "100",    #音量[0,100]
         "pitch": "30",    #音高[0,100]
         "engine_type": "aisound"    #引擎类型。aisound（普通效果），intp65（中文），intp65_en（英文）
     }
@@ -127,7 +130,8 @@ def short_tts(TEXT, xf_tts):
     response = urllib.request.urlopen(req)
     response_head = response.headers['Content-Type']
     if(response_head == "text/plain"):
-        raise UserWarning("讯飞WebAPI错误: {}".format(response.read().decode('utf8')))
+        err_msg=json.loads(response.read().decode('utf8'))
+        raise UserWarning("讯飞WebAPI错误: {}".format(err_msg["desc"]))
 #     return response.read()
     return response
 
@@ -148,26 +152,12 @@ def long_tts(TEXT, xf_tts):
 
 def xf_save_tts(xf_tts, TEXT, filename):
     data=long_tts(TEXT, xf_tts)
-    temp_filename_list=["tts_tmp_{}.mp3".format(index) for index in range(len(data))]
-    
+    combined = AudioSegment.empty()
     for index, voice_piece in enumerate(data):
-        temp_filename=temp_filename_list[index]
-        with open(temp_filename, 'wb') as f:
-            f.write(voice_piece)
-    with open("temp_file_list.txt", "w") as f_temp:
-        for temp_filename in temp_filename_list:
-            f_temp.write("file '{}'\n".format(temp_filename))
-    # concat with ffmpeg
-#     ffmpeg -f concat -i mylist.txt -c copy output
-    subprocess.run([
-        "ffmpeg","-f","concat",
-        "-i", "temp_file_list.txt",
-        "-c", "copy",
-        filename
-    ])
-    os.remove("temp_file_list.txt")
-    for temp_filename in temp_filename_list:
-        os.remove(temp_filename)
+        combined += AudioSegment.from_mp3(BytesIO(voice_piece))
+    combined.export(filename, 
+                format="mp3",
+                codec="libmp3lame")
 
 
 # In[9]:
@@ -175,7 +165,7 @@ def xf_save_tts(xf_tts, TEXT, filename):
 
 if __name__=="__main__":
     text='''
-只要晶状体出现浑浊，就叫白内障。
+只要晶状体出现浑浊，就叫白内障cataract。
 所以白内障实际上是一个很宽泛的概念。
 我们知道人眼有2个透镜，1个是角膜，1个是晶状体, 相当于照相机上的镜头组，如果镜头之中有任何1个是混浊的，那么都会影响成像的质量。白内障可以是一部分的混浊，也可以是完全的混浊，
 白内障患者的视觉有可能是部分影响，觉得看东西模糊, 也可能是完全就看不见了。如果双眼晶状体都完全浑浊不透光, 那么患者就是盲人了. 
