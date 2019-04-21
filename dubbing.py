@@ -134,12 +134,14 @@ def main(ppt_filename, output_filename, tts_engine):
     prs=read_pptx(ppt_filename)
     N_slides=len(prs.slides)
     
-    for index, slide in enumerate(prs.slides): 
-        note=get_notes_text(slide)
-        voice_filename=save_notes_voice(ve, note, index, tts_engine)
-        insert_voice(voice_filename, slide)
-        print("Slide No. {} / {}".format(index+1,N_slides))
-        clean_temp(voice_filename)
+    with open(output_filename+".txt","w") as f:
+        for index, slide in enumerate(prs.slides): 
+            note=get_notes_text(slide)
+            voice_filename=save_notes_voice(ve, note, index, tts_engine)
+            insert_voice(voice_filename, slide)
+            print("Slide No. {} / {}".format(index+1,N_slides))
+            clean_temp(voice_filename)
+            f.write(note)
     prs.save(output_filename)
     print("save to ",output_filename)
 

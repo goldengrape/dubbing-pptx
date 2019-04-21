@@ -90,6 +90,7 @@ class Speech:
         
     def splitText(self,text):
         text+="." #如果最后一句话没有标点，可能会被漏掉一部分， 反正是朗读，所以干脆加个句号
+        text=text.replace("\n","")
         s=[]
         if len(text)>__class__.MAX_SEGMENT_SIZE:
             s+=self.split_pattern.findall(text)
