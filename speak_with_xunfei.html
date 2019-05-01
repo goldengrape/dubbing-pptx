@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>google_tts</title>
+<title>speak_with_xunfei</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13113,411 +13113,34 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>重构google_speech</p>
-<p>Forked from <a href="https://github.com/desbma/GoogleSpeech">https://github.com/desbma/GoogleSpeech</a></p>
-<p>在如下几个方面进行改变:</p>
-<ul>
-<li>在中英文混合的语句中, 中文要读中文, 英文要读英文. 因为是调用了Google translate的非官方API, 所以Pubmed居然会被读成“帕布莫德”这样的可怕中文名. (已经完成)</li>
-<li>支持BytesIO的读写, (已经完成)</li>
-<li>并在内存内完成音频的拼接 (已经完成)</li>
-<li>移除sox支持, 使之称为纯粹的python工具. 减少其他相关程序的安装. 受够了开源软件的一个又一个依赖. (已经完成)</li>
-</ul>
-
-</div>
-</div>
-</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="sd">&quot;&quot;&quot; Read a text using Google Translate TTS API. &quot;&quot;&quot;</span>
-
-<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;1.1.0&quot;</span>
-<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;goldengrape, fork from desbma https://github.com/desbma/GoogleSpeech&quot;</span>
-<span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;LGPLv2&quot;</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">string</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">from</span> <span class="nn">xunfei_tts</span> <span class="k">import</span> <span class="n">Speech</span> <span class="k">as</span> <span class="n">xf_Speech</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
-<span class="kn">import</span> <span class="nn">appdirs</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">web_cache</span>
+<span class="c1"># 创建解析步骤</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Process TTS&#39;</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">pydub</span> <span class="k">import</span> <span class="n">AudioSegment</span>
-<span class="kn">from</span> <span class="nn">pydub.playback</span> <span class="k">import</span> <span class="n">play</span>
-</pre></div>
+<span class="c1"># 添加参数步骤</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-t&#39;</span><span class="p">,</span><span class="s1">&#39;--text&#39;</span><span class="p">,</span>  <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> 
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;text to speak&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-f&#39;</span><span class="p">,</span><span class="s1">&#39;--file&#39;</span><span class="p">,</span>  <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> 
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;text file name to speak&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-o&#39;</span><span class="p">,</span><span class="s1">&#39;--output&#39;</span><span class="p">,</span>  <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;output file name&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span><span class="s1">&#39;--voice&#39;</span><span class="p">,</span>  <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;aisjiuxu&#39;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;the voice of tts&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-a&#39;</span><span class="p">,</span><span class="s1">&#39;--api&#39;</span><span class="p">,</span>  <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;API_setup.txt&#39;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;setup the api filename&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-s&#39;</span><span class="p">,</span><span class="s1">&#39;--speak&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;speak&#39;</span><span class="p">)</span>
 
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">SUPPORTED_LANGUAGES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;af&quot;</span><span class="p">,</span> <span class="s2">&quot;ar&quot;</span><span class="p">,</span> <span class="s2">&quot;bn&quot;</span><span class="p">,</span> <span class="s2">&quot;bs&quot;</span><span class="p">,</span> <span class="s2">&quot;ca&quot;</span><span class="p">,</span> <span class="s2">&quot;cs&quot;</span><span class="p">,</span> <span class="s2">&quot;cy&quot;</span><span class="p">,</span> <span class="s2">&quot;da&quot;</span><span class="p">,</span> <span class="s2">&quot;de&quot;</span><span class="p">,</span> <span class="s2">&quot;el&quot;</span><span class="p">,</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="s2">&quot;en-au&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ca&quot;</span><span class="p">,</span> <span class="s2">&quot;en-gb&quot;</span><span class="p">,</span>
-                       <span class="s2">&quot;en-gh&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ie&quot;</span><span class="p">,</span> <span class="s2">&quot;en-in&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ng&quot;</span><span class="p">,</span> <span class="s2">&quot;en-nz&quot;</span><span class="p">,</span> <span class="s2">&quot;en-ph&quot;</span><span class="p">,</span> <span class="s2">&quot;en-tz&quot;</span><span class="p">,</span> <span class="s2">&quot;en-uk&quot;</span><span class="p">,</span> <span class="s2">&quot;en-us&quot;</span><span class="p">,</span> <span class="s2">&quot;en-za&quot;</span><span class="p">,</span> <span class="s2">&quot;eo&quot;</span><span class="p">,</span>
-                       <span class="s2">&quot;es&quot;</span><span class="p">,</span> <span class="s2">&quot;es-es&quot;</span><span class="p">,</span> <span class="s2">&quot;es-us&quot;</span><span class="p">,</span> <span class="s2">&quot;et&quot;</span><span class="p">,</span> <span class="s2">&quot;fi&quot;</span><span class="p">,</span> <span class="s2">&quot;fr&quot;</span><span class="p">,</span> <span class="s2">&quot;fr-ca&quot;</span><span class="p">,</span> <span class="s2">&quot;fr-fr&quot;</span><span class="p">,</span> <span class="s2">&quot;hi&quot;</span><span class="p">,</span> <span class="s2">&quot;hr&quot;</span><span class="p">,</span> <span class="s2">&quot;hu&quot;</span><span class="p">,</span> <span class="s2">&quot;hy&quot;</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;is&quot;</span><span class="p">,</span>
-                       <span class="s2">&quot;it&quot;</span><span class="p">,</span> <span class="s2">&quot;ja&quot;</span><span class="p">,</span> <span class="s2">&quot;jw&quot;</span><span class="p">,</span> <span class="s2">&quot;km&quot;</span><span class="p">,</span> <span class="s2">&quot;ko&quot;</span><span class="p">,</span> <span class="s2">&quot;la&quot;</span><span class="p">,</span> <span class="s2">&quot;lv&quot;</span><span class="p">,</span> <span class="s2">&quot;mk&quot;</span><span class="p">,</span> <span class="s2">&quot;ml&quot;</span><span class="p">,</span> <span class="s2">&quot;mr&quot;</span><span class="p">,</span> <span class="s2">&quot;my&quot;</span><span class="p">,</span> <span class="s2">&quot;ne&quot;</span><span class="p">,</span> <span class="s2">&quot;nl&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;pl&quot;</span><span class="p">,</span> <span class="s2">&quot;pt&quot;</span><span class="p">,</span>
-                       <span class="s2">&quot;pt-br&quot;</span><span class="p">,</span> <span class="s2">&quot;pt-pt&quot;</span><span class="p">,</span> <span class="s2">&quot;ro&quot;</span><span class="p">,</span> <span class="s2">&quot;ru&quot;</span><span class="p">,</span> <span class="s2">&quot;si&quot;</span><span class="p">,</span> <span class="s2">&quot;sk&quot;</span><span class="p">,</span> <span class="s2">&quot;sq&quot;</span><span class="p">,</span> <span class="s2">&quot;sr&quot;</span><span class="p">,</span> <span class="s2">&quot;su&quot;</span><span class="p">,</span> <span class="s2">&quot;sv&quot;</span><span class="p">,</span> <span class="s2">&quot;sw&quot;</span><span class="p">,</span> <span class="s2">&quot;ta&quot;</span><span class="p">,</span> <span class="s2">&quot;te&quot;</span><span class="p">,</span> <span class="s2">&quot;th&quot;</span><span class="p">,</span> <span class="s2">&quot;tl&quot;</span><span class="p">,</span>
-                       <span class="s2">&quot;tr&quot;</span><span class="p">,</span> <span class="s2">&quot;uk&quot;</span><span class="p">,</span> <span class="s2">&quot;vi&quot;</span><span class="p">,</span> <span class="s2">&quot;zh-cn&quot;</span><span class="p">,</span> <span class="s2">&quot;zh-tw&quot;</span><span class="p">)</span>
-
-<span class="n">PRELOADER_THREAD_COUNT</span> <span class="o">=</span> <span class="mi">1</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-
-<pre><code>$ google_speech -o a.mp3 -l en 'hey'
-$ ffprobe -hide_banner a.mp3 
-Input #0, mp3, from 'a.mp3':
-  Duration: 00:00:00.77, start: 0.000000, bitrate: 32 kb/s
-    Stream #0:0: Audio: mp3, 24000 Hz, mono, fltp, 32 kb/s
-$ google_speech -o b.mp3 -l zh-cn '你好'
-$ ffprobe -hide_banner b.mp3 
-Input #0, mp3, from 'b.mp3':
-  Duration: 00:00:00.94, start: 0.000000, bitrate: 32 kb/s
-    Stream #0:0: Audio: mp3, 22050 Hz, mono, fltp, 32 kb/</code></pre>
-<p>对于google translate TTS返回的mp3， 居然中文和英文是两种不同的frame_rate，所以不能直接混合。</p>
-<p>因此使用了pydub将音频进行了混合</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">PreloaderThread</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
-
-  <span class="sd">&quot;&quot;&quot; Thread to pre load (download and store in cache) audio data of a segment. &quot;&quot;&quot;</span>
-
-  <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">segments</span><span class="p">:</span>
-            <span class="n">acquired</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">acquired</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">segment</span><span class="o">.</span><span class="n">isInCache</span><span class="p">():</span>
-                        <span class="n">segment</span><span class="o">.</span><span class="n">preLoad</span><span class="p">()</span>
-                <span class="k">finally</span><span class="p">:</span>
-                    <span class="n">segment</span><span class="o">.</span><span class="n">preload_mutex</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>处理文本</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">Speech</span><span class="p">:</span>
-
-    <span class="sd">&quot;&quot;&quot; Text to be read. &quot;&quot;&quot;</span>
-
-    <span class="n">CLEAN_MULTIPLE_SPACES_REGEX</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;\s{2,}&quot;</span><span class="p">)</span>
-    <span class="n">MAX_SEGMENT_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
-    <span class="n">MIN_SEGMENT_SIZE</span> <span class="o">=</span> <span class="mi">50</span>
-
-    <span class="c1"># 可能有中英文混排的文字, 所以应当设定两种语言. 如果是纯英文的, 两种语言就都设定成en好了. </span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">default_lang</span><span class="p">,</span> <span class="n">switch_lang</span><span class="o">=</span><span class="s1">&#39;en-us&#39;</span><span class="p">):</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleanSpaces</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lang</span> <span class="o">=</span> <span class="n">default_lang</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">default_lang</span><span class="o">=</span><span class="n">default_lang</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span><span class="o">=</span><span class="n">switch_lang</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">cn_en_pattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_pattern</span><span class="o">=</span><span class="vm">__class__</span><span class="o">.</span><span class="n">split_pattern</span><span class="p">()</span>
-        
-    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get an iterator over speech segments. &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get a speech segment, </span>
-<span class="sd">        splitting text by taking into account spaces, </span>
-<span class="sd">        punctuation, and maximum segment size. &quot;&quot;&quot;</span>
-        
-        <span class="c1"># 移除了--的部分</span>
-        <span class="n">segments</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">):</span>
-            <span class="k">if</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">is_EN</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
-                    <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">switch_lang</span>
-            <span class="k">else</span><span class="p">:</span>
-                    <span class="n">now_lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_lang</span>
-            <span class="k">yield</span> <span class="n">SpeechSegment</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">now_lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">is_EN</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-        <span class="n">c</span><span class="o">=</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span><span class="p">)</span>
-                                       
-    <span class="k">def</span> <span class="nf">split_pattern</span><span class="p">():</span>
-        <span class="n">cn_punc</span><span class="o">=</span><span class="s2">&quot;！，。？、~@#￥%……&amp;*（）：；《）《》“”()»〔〕-&quot;</span> <span class="c1">#this line is Chinese punctuation</span>
-        <span class="n">en_punc</span><span class="o">=</span><span class="n">string</span><span class="o">.</span><span class="n">punctuation</span>
-        <span class="n">cn_en_pattern</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-            <span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">a-zA-Z ]+|[</span><span class="si">{}</span><span class="se">\u4e00</span><span class="s1">-</span><span class="se">\u9fa5</span><span class="s1">0-9 </span><span class="si">{}</span><span class="s1">]+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">en_punc</span><span class="p">,</span><span class="n">en_punc</span><span class="p">,</span><span class="n">cn_punc</span><span class="p">)</span>
-        <span class="p">)</span>
-        
-        <span class="n">useless_chars</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
-                              <span class="n">en_punc</span> 
-                              <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">whitespace</span>
-                              <span class="o">+</span> <span class="n">cn_punc</span> 
-                              <span class="p">)</span>
-        <span class="n">split_pattern</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;([\s\S]{&quot;</span>
-                 <span class="o">+</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">MIN_SEGMENT_SIZE</span><span class="p">,</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">MAX_SEGMENT_SIZE</span><span class="p">)</span>
-                 <span class="o">+</span> <span class="s2">&quot;}[useless_chars|(?!.\d+)|(?!,\d+)])&quot;</span><span class="p">)</span>
-        
-        <span class="k">return</span> <span class="n">cn_en_pattern</span><span class="p">,</span> <span class="n">split_pattern</span>
-
-    
-    <span class="k">def</span> <span class="nf">splitText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">text</span><span class="p">):</span>
-        <span class="n">s</span><span class="o">=</span><span class="p">[]</span>
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cn_en_pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">&gt;</span><span class="vm">__class__</span><span class="o">.</span><span class="n">MAX_SEGMENT_SIZE</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">+=</span><span class="bp">self</span><span class="o">.</span><span class="n">split_pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">s</span>
-    
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">cleanSpaces</span><span class="p">(</span><span class="n">dirty_string</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Remove consecutive spaces from a string. &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">CLEAN_MULTIPLE_SPACES_REGEX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span>
-                                                     <span class="n">dirty_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-
-    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Play a speech. &quot;&quot;&quot;</span>
-
-        <span class="c1"># Build the segments</span>
-        <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">segments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="c1"># start preloader thread(s)</span>
-        <span class="n">preloader_threads</span> <span class="o">=</span> <span class="p">[</span><span class="n">PreloaderThread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;PreloaderThread-</span><span class="si">%u</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">PRELOADER_THREAD_COUNT</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">preloader_thread</span> <span class="ow">in</span> <span class="n">preloader_threads</span><span class="p">:</span>
-            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span>
-            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-
-
-        <span class="c1"># play segments</span>
-        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
-            <span class="n">segment</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
-
-
-        <span class="c1"># destroy preloader threads</span>
-        <span class="k">for</span> <span class="n">preloader_thread</span> <span class="ow">in</span> <span class="n">preloader_threads</span><span class="p">:</span>
-            <span class="n">preloader_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Save audio data to an MP3 file. &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">savef</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">savef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Write audio data into a file object. &quot;&quot;&quot;</span>
-        <span class="n">combined</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">combined</span> <span class="o">+=</span> <span class="n">segment</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
-        <span class="n">combined</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> 
-                        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mp3&quot;</span><span class="p">,</span>
-                        <span class="n">codec</span><span class="o">=</span><span class="s2">&quot;libmp3lame&quot;</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>朗读</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">SpeechSegment</span><span class="p">:</span>
-
-    <span class="sd">&quot;&quot;&quot; Text segment to be read. &quot;&quot;&quot;</span>
-
-    <span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://translate.google.com/translate_tts&quot;</span>
-    <span class="n">playback_speed</span><span class="o">=</span><span class="mf">1.2</span>
-    
-    <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lang</span><span class="p">,</span> <span class="n">segment_num</span><span class="p">,</span> <span class="n">segment_count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">segment_num</span> <span class="o">=</span> <span class="n">segment_num</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">segment_count</span> <span class="o">=</span> <span class="n">segment_count</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">preload_mutex</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;cache&quot;</span><span class="p">):</span>
-            <span class="n">db_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">appdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">&quot;google_speech&quot;</span><span class="p">,</span>
-                                                            <span class="n">appauthor</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-                                     <span class="s2">&quot;google_speech-cache.sqlite&quot;</span><span class="p">)</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">db_filepath</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">cache_name</span> <span class="o">=</span> <span class="s2">&quot;sound_data&quot;</span>
-            <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">web_cache</span><span class="o">.</span><span class="n">ThreadedWebCache</span><span class="p">(</span><span class="n">db_filepath</span><span class="p">,</span>
-                                                       <span class="n">cache_name</span><span class="p">,</span>
-                                                       <span class="n">expiration</span><span class="o">=</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">365</span><span class="p">,</span>  <span class="c1"># 1 year</span>
-                                                       <span class="n">caching_strategy</span><span class="o">=</span><span class="n">web_cache</span><span class="o">.</span><span class="n">CachingStrategy</span><span class="o">.</span><span class="n">LRU</span><span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Total size of file &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">db_filepath</span><span class="p">,</span>
-                                                                     <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">getDatabaseFileSize</span><span class="p">()))</span>
-            <span class="n">purged_count</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%u</span><span class="s2"> obsolete entries have been removed from cache &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">purged_count</span><span class="p">,</span> <span class="n">cache_name</span><span class="p">))</span>
-            <span class="n">row_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cache &#39;</span><span class="si">%s</span><span class="s2">&#39; contains </span><span class="si">%u</span><span class="s2"> entries&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">row_count</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span>
-
-    <span class="k">def</span> <span class="nf">isInCache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Return True if audio data for this segment is present in cache, False otherwise. &quot;&quot;&quot;</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">(</span><span class="n">cache_friendly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">url</span> <span class="ow">in</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span>
-
-    <span class="k">def</span> <span class="nf">preLoad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store audio data in cache for fast playback. &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preloading segment &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">))</span>
-        <span class="n">real_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">()</span>
-        <span class="n">cache_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">(</span><span class="n">cache_friendly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">real_url</span><span class="p">)</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
-        <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
-        
-    <span class="k">def</span> <span class="nf">trim_silence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sound</span><span class="p">):</span>    
-        <span class="k">def</span> <span class="nf">detect_leading_silence</span><span class="p">(</span><span class="n">sound</span><span class="p">,</span> <span class="n">silence_threshold</span><span class="o">=-</span><span class="mf">50.0</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-            <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">            sound is a pydub.AudioSegment</span>
-<span class="sd">            silence_threshold in dB</span>
-<span class="sd">            chunk_size in ms</span>
-
-<span class="sd">            iterate over chunks until you find the first one with sound</span>
-<span class="sd">            &#39;&#39;&#39;</span>
-            <span class="n">trim_ms</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># ms</span>
-
-            <span class="k">assert</span> <span class="n">chunk_size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="c1"># to avoid infinite loop</span>
-            <span class="k">while</span> <span class="n">sound</span><span class="p">[</span><span class="n">trim_ms</span><span class="p">:</span><span class="n">trim_ms</span><span class="o">+</span><span class="n">chunk_size</span><span class="p">]</span><span class="o">.</span><span class="n">dBFS</span> <span class="o">&lt;</span> <span class="n">silence_threshold</span> <span class="ow">and</span> <span class="n">trim_ms</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sound</span><span class="p">):</span>
-                <span class="n">trim_ms</span> <span class="o">+=</span> <span class="n">chunk_size</span>
-
-            <span class="k">return</span> <span class="n">trim_ms</span>
-
-        <span class="n">start_trim</span> <span class="o">=</span> <span class="n">detect_leading_silence</span><span class="p">(</span><span class="n">sound</span><span class="p">)</span>
-        <span class="n">end_trim</span> <span class="o">=</span> <span class="n">detect_leading_silence</span><span class="p">(</span><span class="n">sound</span><span class="o">.</span><span class="n">reverse</span><span class="p">())</span>
-
-        <span class="n">duration</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sound</span><span class="p">)</span>    
-        <span class="n">trimmed_sound</span> <span class="o">=</span> <span class="n">sound</span><span class="p">[</span><span class="n">start_trim</span><span class="p">:</span><span class="n">duration</span><span class="o">-</span><span class="n">end_trim</span><span class="p">]</span>
-        
-        <span class="k">return</span> <span class="n">trimmed_sound</span>
-
-
-    <span class="k">def</span> <span class="nf">getAudioData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Fetch the audio data. &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">preload_mutex</span><span class="p">:</span>
-            <span class="n">cache_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">(</span><span class="n">cache_friendly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">cache_url</span> <span class="ow">in</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got data for URL &#39;</span><span class="si">%s</span><span class="s2">&#39; from cache&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cache_url</span><span class="p">))</span>
-                <span class="n">audio_data</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span>
-                <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">real_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildUrl</span><span class="p">()</span>
-                <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">real_url</span><span class="p">)</span>
-                <span class="k">assert</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
-                <span class="vm">__class__</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">cache_url</span><span class="p">]</span> <span class="o">=</span> <span class="n">audio_data</span>
-        <span class="c1"># 注意！由于中文与英文的音频采样率不同， 分别是22050Hz和24000Hz，</span>
-        <span class="c1"># 所以如果直接使用二进制方式，虽然可以朗读， 但无法进行文件的连续写入</span>
-        <span class="c1"># 因此在此处使用Pydub中的AudioSegment，使其可以方便处理</span>
-        <span class="n">voice</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">from_mp3</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">audio_data</span><span class="p">))</span>
-<span class="c1">#         voice = self.trim_silence(voice)</span>
-        <span class="n">voice</span> <span class="o">=</span> <span class="n">voice</span><span class="o">.</span><span class="n">speedup</span><span class="p">(</span><span class="n">playback_speed</span><span class="o">=</span><span class="vm">__class__</span><span class="o">.</span><span class="n">playback_speed</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">voice</span>
-        
-
-    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Play the segment. &quot;&quot;&quot;</span>
-        <span class="n">audio_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAudioData</span><span class="p">()</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Playing speech segment (</span><span class="si">%s</span><span class="s2">): &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
-        <span class="n">play</span><span class="p">(</span><span class="n">audio_data</span><span class="p">)</span>
-
-    
-    <span class="k">def</span> <span class="nf">buildUrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_friendly</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Construct the URL to get the sound from Goggle API.</span>
-
-<span class="sd">        If cache_friendly is True, remove token from URL to use as a cache key.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
-        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tw-ob&quot;</span>
-        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;ie&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;UTF-8&quot;</span>
-        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_num</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-          <span class="n">params</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment_count</span><span class="p">)</span>
-        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;textlen&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
-        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;tl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lang</span>
-        <span class="n">lower_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower_text</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">?</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="n">BASE_URL</span><span class="p">,</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Download a sound file. &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Downloading &#39;</span><span class="si">%s</span><span class="s2">&#39;...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">))</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="vm">__class__</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span>
-                                         <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla/5.0&quot;</span><span class="p">},</span>
-                                         <span class="n">timeout</span><span class="o">=</span><span class="mf">3.1</span><span class="p">)</span>
-        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span>
+<span class="c1"># 解析参数步骤  </span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13530,7 +13153,23 @@ Input #0, mp3, from 'b.mp3':
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 要说的话</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+    <span class="n">text</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">text</span>
+<span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">text_file</span><span class="p">:</span>
+        <span class="n">text</span><span class="o">=</span><span class="n">text_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="c1"># 初始化讯飞引擎</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">api</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>  
+    <span class="n">api</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+    <span class="n">ve</span> <span class="o">=</span> <span class="n">xf_Speech</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">voice_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">voice</span><span class="p">)</span>         
+<span class="c1"># 朗读</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">speak</span><span class="p">:</span> 
+    <span class="n">ve</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="c1"># 存储</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+    <span class="n">ve</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">text</span><span class="p">,</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
 </pre></div>
 
     </div>

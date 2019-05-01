@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # 重构google_speech
@@ -347,4 +347,10 @@ class SpeechSegment:
                                          timeout=3.1)
         response.raise_for_status()
         return response.content
+
+
+# In[ ]:
+
+
+
 

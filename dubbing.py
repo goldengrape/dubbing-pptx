@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # # 为PPT配音
@@ -11,13 +11,17 @@
 
 import sys, os , subprocess, time, platform, json
 if platform.system()=="Darwin":
-    from  AppKit import NSSpeechSynthesizer
-    import Foundation
+    try:
+        from  AppKit import NSSpeechSynthesizer
+        import Foundation
+    except:
+        pass
 from pptx import Presentation
 from pptx.util import Inches
 # from xunfei_tts import init_xf_tts, xf_save_tts
 from google_tts import Speech as gSpeech
 from xunfei_tts import Speech as xf_Speech
+from pydub import AudioSegment
 
 
 # In[2]:
@@ -39,7 +43,7 @@ def init_tts(tts_engine):
 #         ve = init_xf_tts()
         with open('API_setup.txt') as json_file:  
             api = json.load(json_file)
-            ve = xf_Speech(api, voice_name="x_yifeng")
+            ve = xf_Speech(api, voice_name="x_xiaofeng")
     elif tts_engine=="google":
         ve = 0
     else:
@@ -78,7 +82,7 @@ def save_tts(ve, TEXT, filename, tts_engine):
         # 看起来很复杂的样子, 参考: https://github.com/nateshmbhat/pyttsx3/issues/7
         pass
     elif tts_engine=="xunfei":
-        filename=filename+".mp3"
+        filename=filename+".wav"
 #         xf_save_tts(ve, TEXT, filename)
         ve.save(TEXT,filename)
     elif tts_engine=="google":
@@ -95,6 +99,35 @@ def save_notes_voice(ve, text, page_number, tts_engine):
     voice_filename= "temp_tts_{:3d}".format(page_number)
     voice_filename= save_tts(ve, text,voice_filename, tts_engine )
     return voice_filename
+
+
+# 从tts引擎传回的音频文件可能存在编码问题。于是pydub.AudioSegment再重新灌注一边好了。
+# 
+
+# In[ ]:
+
+
+def reclean_voice(voice_filename):
+    _, file_extension = os.path.splitext(voice_filename)
+    file_extension=file_extension.lstrip(".")
+    (AudioSegment.from_file(voice_filename, 
+                           format=file_extension)
+                .export(voice_filename, 
+                        format=file_extension,
+                        bitrate="32k"))
+    new_voice_filename=voice_filename
+
+# # ffmpeg -i input.wav -vn -ar 44100 -ac 2 -b:a 192k output.mp3
+#     file_name, file_extension = os.path.splitext(voice_filename)
+#     new_voice_filename=file_name+"_new"+'.aif'
+#     subprocess.call(['ffmpeg',
+#                      '-i', voice_filename,
+# #                      '-vn','-ar','44100','-ac','1','-b:a','16k',
+# #                      '-acodec', 'libmp3lame',
+#                      new_voice_filename
+#                     ])
+    return new_voice_filename
+    
 
 
 # ## 将每个音频文件插入到ppt页面中
@@ -138,6 +171,7 @@ def main(ppt_filename, output_filename, tts_engine):
         for index, slide in enumerate(prs.slides): 
             note=get_notes_text(slide)
             voice_filename=save_notes_voice(ve, note, index, tts_engine)
+#             voice_filename=reclean_voice(voice_filename) # 清理一遍音频
             insert_voice(voice_filename, slide)
             print("Slide No. {} / {}".format(index+1,N_slides))
             clean_temp(voice_filename)
@@ -203,4 +237,10 @@ def interpret_opt(opt):
 if __name__=="__main__":
     ppt_filename, output_filename, tts_engine=interpret_opt(sys.argv)
     main(ppt_filename, output_filename, tts_engine)
+
+
+# In[ ]:
+
+
+
 

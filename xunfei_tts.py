@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # 讯飞tts的class
@@ -53,7 +53,7 @@ class Speech:
     def __init__(self, 
                  api,
                  voice_name='aisjiuxu', 
-                 audio_type="mp3", #音频编码，raw(生成wav)或lame(生成mp3)
+                 audio_type="wav", #音频编码，raw(生成wav)或lame(生成mp3)
                  speed="60",
                  volume="100",
                  pitch="30",
@@ -75,16 +75,17 @@ class Speech:
     
     def split_pattern():
         '''编译好用于切分长句的正则表达式，使切分出的长度不超过MAX_SEGMENT_SIZE，并且切分点在标点断句处'''
-        cn_punc="！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-" #this line is Chinese punctuation
+#         cn_punc="！，。？、~@#￥%……&*（）：；《）《》“”()»〔〕-" #this line is Chinese punctuation
+        cn_punc="！，。？、" #this line is Chinese punctuation
         en_punc=string.punctuation
-        useless_chars = frozenset(
-                              en_punc 
-                              + string.whitespace
-                              + cn_punc 
-                              )
+#         useless_chars = frozenset(
+#                               en_punc 
+#                               + string.whitespace
+#                               + cn_punc 
+#                               )
         split_pattern=re.compile("([\s\S]{"
                  +"{},{}".format(__class__.MIN_SEGMENT_SIZE, __class__.MAX_SEGMENT_SIZE)
-                 + "}[useless_chars|(?!.\d+)|(?!,\d+)])")
+                 + "}[,.\n，。|(?!.\d+)|(?!,\d+)])")
         
         return split_pattern
         
@@ -148,7 +149,11 @@ class Speech:
         else: 
             audio_data=response.read()
             # 为了方便连接多个语句，此处使用pydub处理获得的数据
-            voice = AudioSegment.from_mp3(BytesIO(audio_data))
+            if self.Param["aue"]=='lame':
+                voice = AudioSegment.from_mp3(BytesIO(audio_data))
+            elif self.Param["aue"]=='raw':
+                voice = AudioSegment.from_wav(BytesIO(audio_data))
+
             return voice
     
     def play(self, text):
@@ -167,6 +172,15 @@ class Speech:
         for t in self.splitText(text):
             combined += self.getAudioData(t)
         combined.export(file, 
-                        format="mp3",
-                        codec="libmp3lame")
+#                         format="mp3",
+#                         codec="libmp3lame")
+#                         codec='aac',
+#                         format='adts')
+                        format='wav')
+
+
+# In[ ]:
+
+
+
 
