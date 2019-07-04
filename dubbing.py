@@ -43,7 +43,7 @@ def init_tts(tts_engine):
 #         ve = init_xf_tts()
         with open('API_setup.txt') as json_file:  
             api = json.load(json_file)
-            ve = xf_Speech(api, voice_name="x_xiaofeng")
+            ve = xf_Speech(api, voice_name="aisjiuxu")
     elif tts_engine=="google":
         ve = 0
     else:
